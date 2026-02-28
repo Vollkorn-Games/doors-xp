@@ -1,0 +1,66 @@
+[gd_resource type="Resource" script_class="TaskData" load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/tasks/task_data.gd" id="1_td"]
+[ext_resource type="Script" path="res://scripts/tasks/task_step.gd" id="2_ts"]
+
+[sub_resource type="Resource" id="step1"]
+script = ExtResource("2_ts")
+label = "Acknowledge Warning"
+key_action = "a"
+description = "A virus has been detected!"
+is_timed_wait = false
+wait_time = 0.0
+
+[sub_resource type="Resource" id="step2"]
+script = ExtResource("2_ts")
+label = "Open Antivirus"
+key_action = "o"
+description = "Launch the antivirus program"
+is_timed_wait = false
+wait_time = 0.0
+
+[sub_resource type="Resource" id="step3"]
+script = ExtResource("2_ts")
+label = "Start Scan"
+key_action = "s"
+description = "Begin scanning for threats"
+is_timed_wait = false
+wait_time = 0.0
+
+[sub_resource type="Resource" id="step4"]
+script = ExtResource("2_ts")
+label = "Scanning..."
+key_action = ""
+description = "Please wait while scanning completes"
+is_timed_wait = true
+wait_time = 2.0
+
+[sub_resource type="Resource" id="step5"]
+script = ExtResource("2_ts")
+label = "Quarantine Threat"
+key_action = "q"
+description = "Quarantine the detected virus"
+is_timed_wait = false
+wait_time = 0.0
+
+[sub_resource type="Resource" id="step6"]
+script = ExtResource("2_ts")
+label = "Delete Virus"
+key_action = "d"
+description = "Permanently remove the threat"
+is_timed_wait = false
+wait_time = 0.0
+
+[resource]
+script = ExtResource("1_td")
+task_name = "Virus Alert"
+task_id = &"virus_alert"
+description = "ALERT: Virus detected! Remove it before it spreads!"
+steps = [SubResource("step1"), SubResource("step2"), SubResource("step3"), SubResource("step4"), SubResource("step5"), SubResource("step6")]
+time_limit = 50.0
+base_score = 150
+mistake_penalty = 30
+max_mistakes = 3
+difficulty = 1
+reputation_reward = 0.15
+reputation_penalty = 0.2

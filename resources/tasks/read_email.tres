@@ -1,0 +1,58 @@
+[gd_resource type="Resource" script_class="TaskData" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/tasks/task_data.gd" id="1_td"]
+[ext_resource type="Script" path="res://scripts/tasks/task_step.gd" id="2_ts"]
+
+[sub_resource type="Resource" id="step1"]
+script = ExtResource("2_ts")
+label = "Open Inbox"
+key_action = "o"
+description = "Click to open your email inbox"
+is_timed_wait = false
+wait_time = 0.0
+
+[sub_resource type="Resource" id="step2"]
+script = ExtResource("2_ts")
+label = "Read Message"
+key_action = "r"
+description = "Open the new email"
+is_timed_wait = false
+wait_time = 0.0
+
+[sub_resource type="Resource" id="step3"]
+script = ExtResource("2_ts")
+label = "Scroll Down"
+key_action = "s"
+description = "Scroll to read the full message"
+is_timed_wait = false
+wait_time = 0.0
+
+[sub_resource type="Resource" id="step4"]
+script = ExtResource("2_ts")
+label = "Click Reply"
+key_action = "c"
+description = "Click the reply button"
+is_timed_wait = false
+wait_time = 0.0
+
+[sub_resource type="Resource" id="step5"]
+script = ExtResource("2_ts")
+label = "Send Reply"
+key_action = "enter"
+description = "Send your reply"
+is_timed_wait = false
+wait_time = 0.0
+
+[resource]
+script = ExtResource("1_td")
+task_name = "Read Email"
+task_id = &"read_email"
+description = "You've got mail! Read and reply to the message."
+steps = [SubResource("step1"), SubResource("step2"), SubResource("step3"), SubResource("step4"), SubResource("step5")]
+time_limit = 45.0
+base_score = 100
+mistake_penalty = 25
+max_mistakes = 3
+difficulty = 1
+reputation_reward = 0.1
+reputation_penalty = 0.15

@@ -1,0 +1,113 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/day_summary.gd" id="1_script"]
+
+[node name="DaySummary" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.22, 0.45, 0.73, 1)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Window" type="PanelContainer" parent="CenterContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(450, 400)
+
+[node name="VBox" type="VBoxContainer" parent="CenterContainer/Window"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TitleBar" type="PanelContainer" parent="CenterContainer/Window/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/Window/VBox/TitleBar"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Day 1 - Shift Complete"
+
+[node name="Spacer1" type="Control" parent="CenterContainer/Window/VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 8)
+
+[node name="CompletedLabel" type="Label" parent="CenterContainer/Window/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Tasks Completed: 0"
+
+[node name="PerfectLabel" type="Label" parent="CenterContainer/Window/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Perfect Tasks: 0"
+
+[node name="FailedLabel" type="Label" parent="CenterContainer/Window/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Tasks Failed: 0"
+
+[node name="Sep" type="HSeparator" parent="CenterContainer/Window/VBox"]
+layout_mode = 2
+
+[node name="DayScoreLabel" type="Label" parent="CenterContainer/Window/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Day Score: 0"
+
+[node name="TotalScoreLabel" type="Label" parent="CenterContainer/Window/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Total Score: 0"
+
+[node name="ReputationLabel" type="Label" parent="CenterContainer/Window/VBox"]
+layout_mode = 2
+text = "Reputation:"
+
+[node name="ReputationBar" type="ProgressBar" parent="CenterContainer/Window/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(0, 16)
+max_value = 100.0
+value = 50.0
+show_percentage = false
+
+[node name="Spacer2" type="Control" parent="CenterContainer/Window/VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 16)
+size_flags_vertical = 3
+
+[node name="Buttons" type="HBoxContainer" parent="CenterContainer/Window/VBox"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 16
+
+[node name="ContinueButton" type="Button" parent="CenterContainer/Window/VBox/Buttons"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(120, 32)
+text = "Continue"
+
+[node name="QuitButton" type="Button" parent="CenterContainer/Window/VBox/Buttons"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(120, 32)
+text = "Shut Down"

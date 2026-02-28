@@ -1,0 +1,96 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/main_menu.gd" id="1_script"]
+
+[node name="MainMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.09, 0.22, 0.53, 1)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="LoginPanel" type="PanelContainer" parent="CenterContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(350, 400)
+
+[node name="VBox" type="VBoxContainer" parent="CenterContainer/LoginPanel"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 16
+
+[node name="Logo" type="Label" parent="CenterContainer/LoginPanel/VBox"]
+layout_mode = 2
+text = "Doors XP"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 36
+
+[node name="Subtitle" type="Label" parent="CenterContainer/LoginPanel/VBox"]
+layout_mode = 2
+text = "Professional Edition"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.5, 0.5, 0.5, 1)
+
+[node name="UserIcon" type="PanelContainer" parent="CenterContainer/LoginPanel/VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(80, 80)
+size_flags_horizontal = 4
+
+[node name="IconLabel" type="Label" parent="CenterContainer/LoginPanel/VBox/UserIcon"]
+layout_mode = 2
+text = ":-)"
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_font_sizes/font_size = 32
+
+[node name="UserName" type="Label" parent="CenterContainer/LoginPanel/VBox"]
+layout_mode = 2
+text = "Player"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 18
+
+[node name="StartButton" type="Button" parent="CenterContainer/LoginPanel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(180, 40)
+size_flags_horizontal = 4
+text = "Log In"
+
+[node name="QuitButton" type="Button" parent="CenterContainer/LoginPanel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(180, 40)
+size_flags_horizontal = 4
+text = "Turn Off Computer"
+
+[node name="VersionLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = -24.0
+offset_right = 200.0
+grow_vertical = 0
+text = "Doors XP v0.1"
+theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.7, 0.7, 0.8, 1)

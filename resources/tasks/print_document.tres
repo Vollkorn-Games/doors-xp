@@ -1,0 +1,58 @@
+[gd_resource type="Resource" script_class="TaskData" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/tasks/task_data.gd" id="1_td"]
+[ext_resource type="Script" path="res://scripts/tasks/task_step.gd" id="2_ts"]
+
+[sub_resource type="Resource" id="step1"]
+script = ExtResource("2_ts")
+label = "Open Document"
+key_action = "o"
+description = "Open the document to print"
+is_timed_wait = false
+wait_time = 0.0
+
+[sub_resource type="Resource" id="step2"]
+script = ExtResource("2_ts")
+label = "File Menu"
+key_action = "f"
+description = "Open the File menu"
+is_timed_wait = false
+wait_time = 0.0
+
+[sub_resource type="Resource" id="step3"]
+script = ExtResource("2_ts")
+label = "Select Print"
+key_action = "p"
+description = "Choose Print from the menu"
+is_timed_wait = false
+wait_time = 0.0
+
+[sub_resource type="Resource" id="step4"]
+script = ExtResource("2_ts")
+label = "Set Copies"
+key_action = "c"
+description = "Set the number of copies"
+is_timed_wait = false
+wait_time = 0.0
+
+[sub_resource type="Resource" id="step5"]
+script = ExtResource("2_ts")
+label = "Confirm Print"
+key_action = "enter"
+description = "Send to printer"
+is_timed_wait = false
+wait_time = 0.0
+
+[resource]
+script = ExtResource("1_td")
+task_name = "Print Document"
+task_id = &"print_document"
+description = "Print this document before the deadline!"
+steps = [SubResource("step1"), SubResource("step2"), SubResource("step3"), SubResource("step4"), SubResource("step5")]
+time_limit = 40.0
+base_score = 80
+mistake_penalty = 20
+max_mistakes = 3
+difficulty = 1
+reputation_reward = 0.08
+reputation_penalty = 0.12

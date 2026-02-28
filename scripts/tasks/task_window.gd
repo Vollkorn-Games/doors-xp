@@ -20,6 +20,7 @@ var _is_waiting: bool = false
 
 var _title_bar: PanelContainer
 var _title_label: Label
+var _progress_label: Label
 var _steps_container: VBoxContainer
 var _step_labels: Array[Label] = []
 var _current_step_panel: PanelContainer
@@ -141,6 +142,7 @@ func _on_mistake() -> void:
 func _on_task_complete() -> void:
 	_is_active = false
 	var perfect: bool = _mistakes == 0
+	_flash_success(perfect)
 	task_completed.emit(perfect)
 
 
@@ -151,6 +153,18 @@ func _on_task_fail() -> void:
 
 func deactivate() -> void:
 	_is_active = false
+
+
+func _flash_success(perfect: bool) -> void:
+	if _flash_tween:
+		_flash_tween.kill()
+		_flash_tween = null
+	var flash_color := Color(0.7, 1.0, 0.7) if not perfect else Color(1.0, 1.0, 0.5)
+	var body_style: StyleBoxFlat = get_theme_stylebox("panel").duplicate() as StyleBoxFlat
+	body_style.bg_color = flash_color
+	add_theme_stylebox_override("panel", body_style)
+	_key_hint_label.text = "DONE!" if not perfect else "PERFECT!"
+	_step_action_label.text = ""
 
 
 func _flash_error() -> void:
@@ -175,6 +189,7 @@ func _show_current_step() -> void:
 		key_display = "SPACE"
 	_key_hint_label.text = "[%s]" % key_display
 	_step_action_label.text = step.label
+	_progress_label.text = "Step %d/%d" % [_current_step_index + 1, _task_data.steps.size()]
 	_highlight_current_step()
 
 
@@ -236,6 +251,12 @@ func _build_ui() -> void:
 	_title_label.add_theme_font_size_override("font_size", 13)
 	_title_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	title_hbox.add_child(_title_label)
+
+	_progress_label = Label.new()
+	_progress_label.text = ""
+	_progress_label.add_theme_color_override("font_color", Color(0.8, 0.9, 1.0))
+	_progress_label.add_theme_font_size_override("font_size", 11)
+	title_hbox.add_child(_progress_label)
 
 	# Steps list
 	_steps_container = VBoxContainer.new()

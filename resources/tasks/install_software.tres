@@ -1,0 +1,74 @@
+[gd_resource type="Resource" script_class="TaskData" load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://scripts/tasks/task_data.gd" id="1_td"]
+[ext_resource type="Script" path="res://scripts/tasks/task_step.gd" id="2_ts"]
+
+[sub_resource type="Resource" id="step1"]
+script = ExtResource("2_ts")
+label = "Insert CD-ROM"
+key_action = "i"
+description = "Insert the installation disc"
+is_timed_wait = false
+wait_time = 0.0
+
+[sub_resource type="Resource" id="step2"]
+script = ExtResource("2_ts")
+label = "Run Setup"
+key_action = "r"
+description = "Run setup.exe"
+is_timed_wait = false
+wait_time = 0.0
+
+[sub_resource type="Resource" id="step3"]
+script = ExtResource("2_ts")
+label = "Accept License"
+key_action = "a"
+description = "Accept the End User License Agreement"
+is_timed_wait = false
+wait_time = 0.0
+
+[sub_resource type="Resource" id="step4"]
+script = ExtResource("2_ts")
+label = "Choose Directory"
+key_action = "c"
+description = "Select installation directory"
+is_timed_wait = false
+wait_time = 0.0
+
+[sub_resource type="Resource" id="step5"]
+script = ExtResource("2_ts")
+label = "Next"
+key_action = "n"
+description = "Proceed with installation"
+is_timed_wait = false
+wait_time = 0.0
+
+[sub_resource type="Resource" id="step6"]
+script = ExtResource("2_ts")
+label = "Installing..."
+key_action = ""
+description = "Copying files to hard drive..."
+is_timed_wait = true
+wait_time = 2.5
+
+[sub_resource type="Resource" id="step7"]
+script = ExtResource("2_ts")
+label = "Finish"
+key_action = "enter"
+description = "Installation complete!"
+is_timed_wait = false
+wait_time = 0.0
+
+[resource]
+script = ExtResource("1_td")
+task_name = "Install Software"
+task_id = &"install_software"
+description = "New software needs to be installed on the system."
+steps = [SubResource("step1"), SubResource("step2"), SubResource("step3"), SubResource("step4"), SubResource("step5"), SubResource("step6"), SubResource("step7")]
+time_limit = 50.0
+base_score = 160
+mistake_penalty = 30
+max_mistakes = 3
+difficulty = 2
+reputation_reward = 0.1
+reputation_penalty = 0.16

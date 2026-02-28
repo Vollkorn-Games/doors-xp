@@ -23,11 +23,11 @@ Scene flow: MainMenu → Desktop (gameplay) → DaySummary → loop back to Desk
 ### Directory Layout
 
 ```
-scenes/              3 .tscn files (main_menu, desktop, day_summary)
+scenes/              4 .tscn files (main_menu, desktop, day_summary, game_over)
 scripts/autoload/    3 autoloads (event_bus, game_manager, task_manager)
 scripts/tasks/       task_data.gd, task_step.gd, task_window.gd
-scripts/ui/          desktop.gd, main_menu.gd, day_summary.gd, taskbar_button.gd, xp_theme_builder.gd
-resources/tasks/     3 .tres task definitions (print_document, read_email, virus_alert)
+scripts/ui/          desktop.gd, main_menu.gd, day_summary.gd, game_over.gd, taskbar_button.gd, score_popup.gd, xp_theme_builder.gd
+resources/tasks/     7 .tres task definitions (print_document, read_email, virus_alert, organize_files, install_software, defrag_hdd, blue_screen_fix)
 ```
 
 ## Core Loop
@@ -77,6 +77,10 @@ All cross-system communication goes through `EventBus` signals. Key signals:
 | Print Document | O→F→P→C→Enter | 40s | 80 | 1 |
 | Read Email | O→R→S→C→Enter | 45s | 100 | 1 |
 | Virus Alert | A→O→S→(wait 2s)→Q→D | 50s | 150 | 1 |
+| Organize Files | E→A→X→O→V→Enter | 35s | 120 | 2 |
+| Install Software | I→R→A→C→N→(wait 2.5s)→Enter | 50s | 160 | 2 |
+| Defrag HDD | M→R→P→T→D→(wait 3s)→Enter | 45s | 180 | 2 |
+| Blue Screen Fix | Space→F→(wait 2s)→D→U→I→(wait 2s)→R→Enter | 55s | 250 | 3 |
 
 ## Key Design Decisions
 
@@ -90,23 +94,35 @@ All cross-system communication goes through `EventBus` signals. Key signals:
 ## Godot 4.6 Gotchas
 
 - **class_name resolution**: Autoloads load before class_names. Use `preload()` and `Resource`/`Array[Resource]` instead.
+- **class_name self-reference in static methods**: A script cannot reference its own `class_name` in a static factory method. Use `const _Self := preload("res://path/to/self.gd")` and `_Self.new()` instead.
 - **Integer division**: GDScript warns on `int / int`. Use `@warning_ignore("integer_division")`.
 - **MCP stale autoload**: `run_interactive` injects `_McpInputReceiver` into project.godot. If it persists after stopping, remove the line manually.
 
 ## Status
 
-**Phase 1 MVP: Complete.** Core loop is verified end-to-end: spawn → select → key sequence → score → day summary → next day.
+**Phase 2 in progress.** Core loop verified. Visual polish and content expansion underway.
 
-### What's Missing (Phase 2+ ideas)
+### Phase 2 additions (done)
+- 4 new task types: Organize Files (diff 2), Install Software (diff 2), Defrag HDD (diff 2), Blue Screen Fix (diff 3)
+- Floating score popup on task completion (+120 rises and fades)
+- Combo counter pulse animation (scale bounce on increment)
+- Reputation bar color changes (green → yellow → red based on value)
+- Task window "Step N/M" progress counter in title bar
+- Task window "DONE!" / "PERFECT!" flash on completion
+- Desktop icons: My Computer, My Documents, Recycle Bin, Internet Explorer, Control Panel
+- Game Over screen: BSOD-style with session stats and "press any key" prompt
+- New scene: `scenes/game_over.tscn` with `scripts/ui/game_over.gd`
+- New script: `scripts/ui/score_popup.gd` (floating score text)
 
-- More task types (defrag, install software, organize files, etc.)
-- Difficulty 2-3 tasks with more steps / shorter timers
+### What's Missing (Phase 3+ ideas)
+
 - Sound effects and music
-- Visual polish (animations, particles, transitions)
+- More visual polish (window open/close animations, particles)
 - Upgrades/shop between days
 - Persistent high scores / save system
 - Tutorial / first-time player experience
-- More XP theming (desktop icons, error dialogs as events)
+- More XP theming (error dialogs as random events, desktop wallpaper options)
+- Additional task types (empty recycle bin, Windows Update, disk cleanup)
 
 ## Working With This Project
 

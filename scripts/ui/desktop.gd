@@ -6,12 +6,15 @@ extends Control
 const XPTheme := preload("res://scripts/ui/xp_theme_builder.gd")
 const TaskWindowScript := preload("res://scripts/tasks/task_window.gd")
 const TaskbarButtonScript := preload("res://scripts/ui/taskbar_button.gd")
+const ScorePopupScript := preload("res://scripts/ui/score_popup.gd")
 
 const MAX_SLOTS := 8
 
 var _taskbar_buttons: Array = []
 var _task_windows: Dictionary = {}  # slot_index -> TaskWindow
 var _selected_slot: int = -1
+var _popup_container: Control
+var _prev_score: int = 0
 
 @onready var _background: ColorRect = %Background
 @onready var _task_window_container: CenterContainer = %TaskWindowContainer
@@ -29,6 +32,7 @@ func _ready() -> void:
 	theme = XPTheme.build_theme()
 	_setup_visuals()
 	_setup_taskbar()
+	_setup_popup_container()
 	_connect_signals()
 
 	# If launched directly (not from main menu), start the game
@@ -65,6 +69,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 
 func _setup_visuals() -> void:
 	_background.color = XPTheme.DESKTOP_BG
+	_setup_desktop_icons()
 	_taskbar_panel.add_theme_stylebox_override("panel", XPTheme.make_taskbar_style())
 
 	_start_button.add_theme_stylebox_override("normal", XPTheme.make_start_button_style())
@@ -80,6 +85,60 @@ func _setup_visuals() -> void:
 	_score_label.add_theme_font_size_override("font_size", 16)
 	_combo_label.add_theme_font_size_override("font_size", 14)
 	_day_label.add_theme_font_size_override("font_size", 14)
+
+
+func _setup_desktop_icons() -> void:
+	var icons_data := [
+		{"name": "My Computer", "symbol": "[PC]", "pos": Vector2(20, 70)},
+		{"name": "My Documents", "symbol": "[DOC]", "pos": Vector2(20, 160)},
+		{"name": "Recycle Bin", "symbol": "[BIN]", "pos": Vector2(20, 250)},
+		{"name": "Internet\nExplorer", "symbol": "[IE]", "pos": Vector2(20, 340)},
+		{"name": "Control Panel", "symbol": "[CP]", "pos": Vector2(20, 430)},
+	]
+	for icon_info: Dictionary in icons_data:
+		var icon_container := VBoxContainer.new()
+		icon_container.position = icon_info["pos"]
+		icon_container.alignment = BoxContainer.ALIGNMENT_CENTER
+		icon_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+		var icon_rect := PanelContainer.new()
+		var icon_style := StyleBoxFlat.new()
+		icon_style.bg_color = Color(0.2, 0.4, 0.7, 0.6)
+		icon_style.set_corner_radius_all(4)
+		icon_style.content_margin_left = 8.0
+		icon_style.content_margin_right = 8.0
+		icon_style.content_margin_top = 6.0
+		icon_style.content_margin_bottom = 6.0
+		icon_rect.add_theme_stylebox_override("panel", icon_style)
+		icon_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+		var icon_label := Label.new()
+		icon_label.text = icon_info["symbol"]
+		icon_label.add_theme_color_override("font_color", XPTheme.TEXT_WHITE)
+		icon_label.add_theme_font_size_override("font_size", 16)
+		icon_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		icon_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		icon_rect.add_child(icon_label)
+		icon_container.add_child(icon_rect)
+
+		var name_label := Label.new()
+		name_label.text = icon_info["name"]
+		name_label.add_theme_color_override("font_color", XPTheme.TEXT_WHITE)
+		name_label.add_theme_font_size_override("font_size", 11)
+		name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		name_label.add_theme_constant_override("outline_size", 2)
+		name_label.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.6))
+		name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		icon_container.add_child(name_label)
+
+		_background.add_child(icon_container)
+
+
+func _setup_popup_container() -> void:
+	_popup_container = Control.new()
+	_popup_container.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_popup_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_popup_container)
 
 
 func _setup_taskbar() -> void:
@@ -210,24 +269,59 @@ func _on_task_window_mistake(slot: int) -> void:
 
 
 func _on_score_changed(new_score: int) -> void:
+	var gained: int = new_score - _prev_score
+	_prev_score = new_score
 	_score_label.text = "Score: %d" % new_score
+
+	if gained > 0:
+		_spawn_score_popup(gained)
 
 
 func _on_reputation_changed(new_reputation: float) -> void:
 	_reputation_bar.value = new_reputation
+
+	# Flash reputation bar red if low
+	if new_reputation <= 25.0:
+		var bar_style: StyleBoxFlat = _reputation_bar.get_theme_stylebox("fill").duplicate() as StyleBoxFlat
+		bar_style.bg_color = XPTheme.ERROR_RED
+		_reputation_bar.add_theme_stylebox_override("fill", bar_style)
+	elif new_reputation <= 40.0:
+		var bar_style: StyleBoxFlat = _reputation_bar.get_theme_stylebox("fill").duplicate() as StyleBoxFlat
+		bar_style.bg_color = XPTheme.WARNING_YELLOW
+		_reputation_bar.add_theme_stylebox_override("fill", bar_style)
+	else:
+		var bar_style: StyleBoxFlat = _reputation_bar.get_theme_stylebox("fill").duplicate() as StyleBoxFlat
+		bar_style.bg_color = XPTheme.PROGRESS_GREEN
+		_reputation_bar.add_theme_stylebox_override("fill", bar_style)
 
 
 func _on_combo_changed(new_combo: int) -> void:
 	if new_combo > 1:
 		_combo_label.text = "Combo x%d" % new_combo
 		_combo_label.visible = true
+		# Animate combo label with a scale pulse
+		var tween := create_tween()
+		_combo_label.scale = Vector2(1.3, 1.3)
+		tween.tween_property(_combo_label, "scale", Vector2.ONE, 0.25).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
 	else:
 		_combo_label.visible = false
+
+
+func _spawn_score_popup(points: int) -> void:
+	var color := Color(1.0, 1.0, 0.4)  # Yellow gold
+	if points >= 200:
+		color = Color(1.0, 0.85, 0.0)  # Bright gold for big scores
+	var popup := ScorePopupScript.create("+%d" % points, color, 22)
+	# Position near the score label
+	popup.position = _score_label.global_position + Vector2(-60, 10)
+	popup.position.x += randf_range(-20, 20)
+	_popup_container.add_child(popup)
 
 
 func _on_day_started(day_number: int) -> void:
 	_day_label.text = "Day %d" % day_number
 	_score_label.text = "Score: %d" % GameManager.score
+	_prev_score = GameManager.score
 	_reputation_bar.value = GameManager.reputation
 
 
@@ -236,6 +330,6 @@ func _on_show_day_summary(_stats: Dictionary) -> void:
 
 
 func _on_game_over() -> void:
-	# Brief delay before showing game over
-	await get_tree().create_timer(1.0).timeout
-	get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
+	# Brief delay before showing BSOD game over screen
+	await get_tree().create_timer(0.5).timeout
+	get_tree().change_scene_to_file("res://scenes/game_over.tscn")

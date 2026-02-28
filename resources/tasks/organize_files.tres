@@ -1,0 +1,66 @@
+[gd_resource type="Resource" script_class="TaskData" load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/tasks/task_data.gd" id="1_td"]
+[ext_resource type="Script" path="res://scripts/tasks/task_step.gd" id="2_ts"]
+
+[sub_resource type="Resource" id="step1"]
+script = ExtResource("2_ts")
+label = "Open Explorer"
+key_action = "e"
+description = "Open Windows Explorer"
+is_timed_wait = false
+wait_time = 0.0
+
+[sub_resource type="Resource" id="step2"]
+script = ExtResource("2_ts")
+label = "Select All Files"
+key_action = "a"
+description = "Select all the messy files"
+is_timed_wait = false
+wait_time = 0.0
+
+[sub_resource type="Resource" id="step3"]
+script = ExtResource("2_ts")
+label = "Cut Files"
+key_action = "x"
+description = "Cut the selected files"
+is_timed_wait = false
+wait_time = 0.0
+
+[sub_resource type="Resource" id="step4"]
+script = ExtResource("2_ts")
+label = "Open Folder"
+key_action = "o"
+description = "Navigate to the correct folder"
+is_timed_wait = false
+wait_time = 0.0
+
+[sub_resource type="Resource" id="step5"]
+script = ExtResource("2_ts")
+label = "Paste Files"
+key_action = "v"
+description = "Paste files into the folder"
+is_timed_wait = false
+wait_time = 0.0
+
+[sub_resource type="Resource" id="step6"]
+script = ExtResource("2_ts")
+label = "Confirm Move"
+key_action = "enter"
+description = "Confirm the file move"
+is_timed_wait = false
+wait_time = 0.0
+
+[resource]
+script = ExtResource("1_td")
+task_name = "Organize Files"
+task_id = &"organize_files"
+description = "The desktop is a mess! Sort these files into the right folders."
+steps = [SubResource("step1"), SubResource("step2"), SubResource("step3"), SubResource("step4"), SubResource("step5"), SubResource("step6")]
+time_limit = 35.0
+base_score = 120
+mistake_penalty = 25
+max_mistakes = 3
+difficulty = 2
+reputation_reward = 0.09
+reputation_penalty = 0.14

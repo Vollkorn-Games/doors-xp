@@ -1,0 +1,90 @@
+[gd_resource type="Resource" script_class="TaskData" load_steps=11 format=3]
+
+[ext_resource type="Script" path="res://scripts/tasks/task_data.gd" id="1_td"]
+[ext_resource type="Script" path="res://scripts/tasks/task_step.gd" id="2_ts"]
+
+[sub_resource type="Resource" id="step1"]
+script = ExtResource("2_ts")
+label = "Don't Panic!"
+key_action = "space"
+description = "Take a deep breath..."
+is_timed_wait = false
+wait_time = 0.0
+
+[sub_resource type="Resource" id="step2"]
+script = ExtResource("2_ts")
+label = "Safe Mode Boot"
+key_action = "f"
+description = "Boot into Safe Mode"
+is_timed_wait = false
+wait_time = 0.0
+
+[sub_resource type="Resource" id="step3"]
+script = ExtResource("2_ts")
+label = "Booting..."
+key_action = ""
+description = "Loading Safe Mode..."
+is_timed_wait = true
+wait_time = 2.0
+
+[sub_resource type="Resource" id="step4"]
+script = ExtResource("2_ts")
+label = "Open Device Manager"
+key_action = "d"
+description = "Check for bad drivers"
+is_timed_wait = false
+wait_time = 0.0
+
+[sub_resource type="Resource" id="step5"]
+script = ExtResource("2_ts")
+label = "Uninstall Bad Driver"
+key_action = "u"
+description = "Remove the faulty driver"
+is_timed_wait = false
+wait_time = 0.0
+
+[sub_resource type="Resource" id="step6"]
+script = ExtResource("2_ts")
+label = "Reinstall Driver"
+key_action = "i"
+description = "Install the correct driver"
+is_timed_wait = false
+wait_time = 0.0
+
+[sub_resource type="Resource" id="step7"]
+script = ExtResource("2_ts")
+label = "Installing..."
+key_action = ""
+description = "Driver installation in progress..."
+is_timed_wait = true
+wait_time = 2.0
+
+[sub_resource type="Resource" id="step8"]
+script = ExtResource("2_ts")
+label = "Reboot System"
+key_action = "r"
+description = "Restart the computer"
+is_timed_wait = false
+wait_time = 0.0
+
+[sub_resource type="Resource" id="step9"]
+script = ExtResource("2_ts")
+label = "Verify Fix"
+key_action = "enter"
+description = "System restored successfully!"
+is_timed_wait = false
+wait_time = 0.0
+
+[resource]
+script = ExtResource("1_td")
+task_name = "Blue Screen Fix"
+task_id = &"blue_screen_fix"
+description = "CRITICAL: Blue Screen of Death! Fix it before the boss sees!"
+steps = [SubResource("step1"), SubResource("step2"), SubResource("step3"), SubResource("step4"), SubResource("step5"), SubResource("step6"), SubResource("step7"), SubResource("step8"), SubResource("step9")]
+time_limit = 55.0
+base_score = 250
+mistake_penalty = 40
+max_mistakes = 3
+difficulty = 3
+reputation_reward = 0.2
+reputation_penalty = 0.25

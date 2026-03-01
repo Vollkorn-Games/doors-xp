@@ -122,7 +122,6 @@ func _draw_properties(w: float, h: float) -> void:
 	var r := 35.0
 
 	# Draw pie: ~70% used (blue), ~30% free (pink)
-	var used_angle := 0.7 * TAU
 	var segments := 32
 	# Used portion (blue)
 	for i in range(int(segments * 0.7)):

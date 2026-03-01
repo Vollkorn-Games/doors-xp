@@ -101,6 +101,7 @@ func _setup_visuals() -> void:
 	var start_hbox := HBoxContainer.new()
 	start_hbox.add_theme_constant_override("separation", 6)
 	start_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	start_hbox.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	start_hbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_start_button.add_child(start_hbox)
 	var flag := WindowsFlagScript.new()

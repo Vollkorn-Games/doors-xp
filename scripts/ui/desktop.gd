@@ -94,6 +94,7 @@ func _setup_visuals() -> void:
 
 	# Start button with Windows flag icon + "start" text
 	_start_button.text = ""
+	_start_button.custom_minimum_size = Vector2(80, 0)
 	_start_button.add_theme_stylebox_override("normal", XPTheme.make_start_button_style())
 	_start_button.add_theme_stylebox_override("hover", XPTheme.make_start_button_hover())
 	_start_button.add_theme_stylebox_override("pressed", XPTheme.make_start_button_style())

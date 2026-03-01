@@ -21,7 +21,7 @@ var _empty_style: StyleBoxFlat
 
 func _ready() -> void:
 	_ensure_styles()
-	custom_minimum_size = Vector2(100, 28)
+	custom_minimum_size = Vector2(100, 34)
 	size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	clip_text = true
 	text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
@@ -29,7 +29,7 @@ func _ready() -> void:
 	add_theme_color_override("font_color", _XPTheme.TEXT_WHITE)
 	add_theme_color_override("font_hover_color", _XPTheme.TEXT_WHITE)
 	add_theme_color_override("font_pressed_color", _XPTheme.TEXT_WHITE)
-	add_theme_font_size_override("font_size", 11)
+	add_theme_font_size_override("font_size", 12)
 
 	_update_style()
 

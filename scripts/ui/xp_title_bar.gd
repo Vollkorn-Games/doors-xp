@@ -1,7 +1,7 @@
 extends Control
 
 ## Draws an authentic Windows XP title bar gradient.
-## Darker at left/right edges, brighter in center, with a highlight line at top.
+## Real XP: dark blue edges, bright blue-white center glow, subtle vertical darkening.
 
 var base_color: Color = Color(0.0, 0.34, 0.84)
 
@@ -16,23 +16,25 @@ func _draw() -> void:
 	if w <= 0.0 or h <= 0.0:
 		return
 
-	var dark := base_color.darkened(0.25)
-	var bright := base_color.lightened(0.3)
+	# Derive color stops from the base_color
+	var dark := base_color.darkened(0.4)
+	var bright := base_color.lightened(0.55)
+	var top_highlight := base_color.lightened(0.65)
 
-	# Top highlight (1px bright line)
-	draw_rect(Rect2(0, 0, w, 1), bright.lightened(0.2))
+	# Top highlight line (1px bright)
+	draw_rect(Rect2(0, 0, w, 1), top_highlight)
 
-	# Draw gradient using horizontal bands, each with horizontal color variation
-	var v_bands := 8
-	var h_bands := 24
+	# Draw the gradient using many horizontal bands for smoothness
+	var h_bands := 48
+	var v_bands := 6
 	for j in range(v_bands):
 		var vt := float(j) / v_bands
 		var v_next := float(j + 1) / v_bands
 		var y := 1.0 + vt * (h - 1.0)
 		var band_h := (v_next - vt) * (h - 1.0) + 1.0
 
-		# Vertical factor: top slightly brighter
-		var v_factor := 1.0 - vt * 0.35
+		# Vertical: top brighter, bottom darker (XP gradient is brighter at top)
+		var v_darken := vt * 0.3
 
 		for i in range(h_bands):
 			var ht := float(i) / h_bands
@@ -40,10 +42,18 @@ func _draw() -> void:
 			var x := ht * w
 			var band_w := (h_next - ht) * w + 1.0
 
-			# Horizontal: peak brightness slightly left of center
-			var center_dist: float = absf(ht - 0.42) * 2.2
+			# Horizontal: bright center peak at ~40%, dark at edges
+			# XP uses a gaussian-like bright spot in the center
+			var center_dist: float = absf(ht - 0.4) * 2.5
 			var h_factor := 1.0 - clampf(center_dist, 0.0, 1.0)
-			h_factor *= h_factor  # Sharper falloff
+			# Smooth curve (ease in-out)
+			h_factor = h_factor * h_factor * (3.0 - 2.0 * h_factor)
 
-			var color := dark.lerp(bright, h_factor * v_factor)
+			# Blend from dark edges to bright center
+			var color := dark.lerp(bright, h_factor)
+			# Apply vertical darkening
+			color = color.darkened(v_darken)
 			draw_rect(Rect2(x, y, band_w, band_h), color)
+
+	# Bottom edge: subtle dark line for definition
+	draw_rect(Rect2(0, h - 1, w, 1), dark.darkened(0.15))

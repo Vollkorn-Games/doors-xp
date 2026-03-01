@@ -84,34 +84,35 @@ func _setup_visuals() -> void:
 	taskbar_style.set_border_width_all(0)
 	taskbar_style.content_margin_left = 4.0
 	taskbar_style.content_margin_right = 4.0
-	taskbar_style.content_margin_top = 3.0
-	taskbar_style.content_margin_bottom = 3.0
+	taskbar_style.content_margin_top = 4.0
+	taskbar_style.content_margin_bottom = 4.0
 	_taskbar_panel.add_theme_stylebox_override("panel", taskbar_style)
 	var taskbar_bg := TaskbarBgScript.new()
 	taskbar_bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_taskbar_panel.add_child(taskbar_bg)
 	_taskbar_panel.move_child(taskbar_bg, 0)
 
-	# Start button with Windows flag icon + "start" text
+	# Start button with Windows flag icon + "start" text (XP: bold italic, larger)
 	_start_button.text = ""
-	_start_button.custom_minimum_size = Vector2(80, 0)
+	_start_button.custom_minimum_size = Vector2(108, 38)
 	_start_button.add_theme_stylebox_override("normal", XPTheme.make_start_button_style())
 	_start_button.add_theme_stylebox_override("hover", XPTheme.make_start_button_hover())
 	_start_button.add_theme_stylebox_override("pressed", XPTheme.make_start_button_style())
 	var start_hbox := HBoxContainer.new()
-	start_hbox.add_theme_constant_override("separation", 4)
+	start_hbox.add_theme_constant_override("separation", 6)
 	start_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
 	start_hbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_start_button.add_child(start_hbox)
 	var flag := WindowsFlagScript.new()
-	flag.custom_minimum_size = Vector2(16, 16)
+	flag.custom_minimum_size = Vector2(20, 20)
 	start_hbox.add_child(flag)
 	var start_label := Label.new()
 	start_label.text = "start"
 	start_label.add_theme_color_override("font_color", XPTheme.TEXT_WHITE)
-	start_label.add_theme_font_size_override("font_size", 14)
-	start_label.add_theme_constant_override("outline_size", 1)
-	start_label.add_theme_color_override("font_outline_color", Color(1.0, 1.0, 1.0, 0.3))
+	start_label.add_theme_font_size_override("font_size", 18)
+	# Faux bold-italic: thicker outline + slight skew via transform
+	start_label.add_theme_constant_override("outline_size", 2)
+	start_label.add_theme_color_override("font_outline_color", Color(1.0, 1.0, 1.0, 0.35))
 	start_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	start_hbox.add_child(start_label)
 
@@ -129,22 +130,34 @@ func _setup_visuals() -> void:
 	if taskbar_content:
 		taskbar_content.add_child(tray_panel)
 	_clock_label.add_theme_color_override("font_color", XPTheme.TEXT_WHITE)
-	_clock_label.add_theme_font_size_override("font_size", 12)
+	_clock_label.add_theme_font_size_override("font_size", 13)
 
 	# HUD styled as XP toolbar
 	_setup_hud_style()
 
 
 func _setup_hud_style() -> void:
-	# Style the HUD top bar as a translucent XP toolbar
+	# Style the HUD as a translucent XP-style toolbar strip at the top
 	var top_bar: HBoxContainer = _day_label.get_parent() as HBoxContainer
 	var hud: Control = top_bar.get_parent()
 
 	# Wrap the top bar + reputation bar in a styled panel
 	var toolbar := PanelContainer.new()
-	toolbar.add_theme_stylebox_override("panel", XPTheme.make_toolbar_style())
+	var toolbar_style := StyleBoxFlat.new()
+	# Semi-transparent blue matching XP chrome (like an address bar area)
+	toolbar_style.bg_color = Color(0.08, 0.28, 0.68, 0.75)
+	toolbar_style.border_color = Color(0.30, 0.55, 0.95)
+	toolbar_style.border_width_top = 1
+	toolbar_style.border_width_bottom = 1
+	toolbar_style.border_width_left = 0
+	toolbar_style.border_width_right = 0
+	toolbar_style.content_margin_left = 10.0
+	toolbar_style.content_margin_right = 10.0
+	toolbar_style.content_margin_top = 4.0
+	toolbar_style.content_margin_bottom = 4.0
+	toolbar.add_theme_stylebox_override("panel", toolbar_style)
 	toolbar.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	# Position at top, full width, auto height
+	# Position at top, full width
 	toolbar.anchor_left = 0.0
 	toolbar.anchor_right = 1.0
 	toolbar.anchor_top = 0.0
@@ -163,16 +176,22 @@ func _setup_hud_style() -> void:
 	top_bar_parent.remove_child(_reputation_bar)
 	toolbar_vbox.add_child(top_bar)
 	toolbar_vbox.add_child(_reputation_bar)
-	_reputation_bar.custom_minimum_size.y = 10
+	_reputation_bar.custom_minimum_size.y = 8
 
 	hud.add_child(toolbar)
 
-	_score_label.add_theme_font_size_override("font_size", 15)
+	_score_label.add_theme_font_size_override("font_size", 14)
 	_score_label.add_theme_color_override("font_color", XPTheme.TEXT_WHITE)
+	_score_label.add_theme_constant_override("outline_size", 1)
+	_score_label.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.5))
 	_combo_label.add_theme_font_size_override("font_size", 13)
 	_combo_label.add_theme_color_override("font_color", XPTheme.TEXT_WHITE)
+	_combo_label.add_theme_constant_override("outline_size", 1)
+	_combo_label.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.5))
 	_day_label.add_theme_font_size_override("font_size", 13)
 	_day_label.add_theme_color_override("font_color", XPTheme.TEXT_WHITE)
+	_day_label.add_theme_constant_override("outline_size", 1)
+	_day_label.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.5))
 
 
 func _setup_desktop_icons() -> void:

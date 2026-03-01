@@ -253,17 +253,18 @@ func _build_steps_display() -> void:
 
 
 func _build_ui() -> void:
-	custom_minimum_size = Vector2(400, 300)
+	custom_minimum_size = Vector2(420, 320)
 	size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	size_flags_vertical = Control.SIZE_SHRINK_CENTER
 
 	add_theme_stylebox_override("panel", _XPTheme.make_window_body_style())
 
 	var vbox := VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 0)
 	vbox.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(vbox)
 
-	# Title bar: MarginContainer with gradient drawn behind content
+	# Title bar: taller with gradient drawn behind content
 	_title_bar = PanelContainer.new()
 	var title_bar_style := StyleBoxFlat.new()
 	title_bar_style.bg_color = _XPTheme.TITLE_BAR_BLUE  # Fallback color
@@ -271,16 +272,17 @@ func _build_ui() -> void:
 	title_bar_style.corner_radius_top_right = 8
 	title_bar_style.content_margin_left = 8.0
 	title_bar_style.content_margin_right = 4.0
-	title_bar_style.content_margin_top = 4.0
-	title_bar_style.content_margin_bottom = 4.0
+	title_bar_style.content_margin_top = 5.0
+	title_bar_style.content_margin_bottom = 5.0
 	_title_bar.add_theme_stylebox_override("panel", title_bar_style)
+	_title_bar.custom_minimum_size.y = 30
 	vbox.add_child(_title_bar)
 
 	var title_hbox := HBoxContainer.new()
-	title_hbox.add_theme_constant_override("separation", 4)
+	title_hbox.add_theme_constant_override("separation", 6)
 	_title_bar.add_child(title_hbox)
 
-	# Gradient overlay drawn on top of the PanelContainer background
+	# Gradient overlay behind title bar content
 	_title_bar_gradient = _XPTitleBar.new()
 	_title_bar_gradient.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_title_bar_gradient.show_behind_parent = true
@@ -289,53 +291,83 @@ func _build_ui() -> void:
 	_title_label = Label.new()
 	_title_label.text = "Task"
 	_title_label.add_theme_color_override("font_color", _XPTheme.TEXT_WHITE)
-	_title_label.add_theme_font_size_override("font_size", 14)
-	_title_label.add_theme_constant_override("outline_size", 1)
-	_title_label.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.3))
+	_title_label.add_theme_font_size_override("font_size", 15)
+	_title_label.add_theme_constant_override("outline_size", 2)
+	_title_label.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.4))
 	_title_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_title_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	title_hbox.add_child(_title_label)
 
 	_progress_label = Label.new()
 	_progress_label.text = ""
-	_progress_label.add_theme_color_override("font_color", Color(0.8, 0.9, 1.0))
-	_progress_label.add_theme_font_size_override("font_size", 11)
+	_progress_label.add_theme_color_override("font_color", Color(0.85, 0.92, 1.0))
+	_progress_label.add_theme_font_size_override("font_size", 12)
 	_progress_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	title_hbox.add_child(_progress_label)
 
-	# Window control buttons (decorative, XP-style with 3D bevel)
+	# Window control buttons (XP-style: square, 3D beveled, distinct icons)
 	var ctrl_spacing := HBoxContainer.new()
 	ctrl_spacing.add_theme_constant_override("separation", 2)
 	ctrl_spacing.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	title_hbox.add_child(ctrl_spacing)
 	for btn_info: Array in [
-		["_", Color(0.22, 0.45, 0.88), Color(0.35, 0.60, 1.0)],
-		["[]", Color(0.22, 0.45, 0.88), Color(0.35, 0.60, 1.0)],
-		["X", Color(0.78, 0.20, 0.15), Color(0.95, 0.40, 0.35)],
+		["_", Color(0.22, 0.45, 0.88), Color(0.40, 0.65, 1.0)],
+		["[]", Color(0.22, 0.45, 0.88), Color(0.40, 0.65, 1.0)],
+		["X", Color(0.82, 0.22, 0.15), Color(0.98, 0.45, 0.38)],
 	]:
 		var ctrl_panel := PanelContainer.new()
 		var ctrl_style := StyleBoxFlat.new()
 		ctrl_style.bg_color = btn_info[1]
-		# 3D bevel: lighter top/left border
+		# 3D bevel: lighter top/left, darker bottom/right
 		ctrl_style.border_color = btn_info[2]
 		ctrl_style.border_width_top = 1
 		ctrl_style.border_width_left = 1
 		ctrl_style.border_width_bottom = 1
 		ctrl_style.border_width_right = 1
-		ctrl_style.set_corner_radius_all(2)
-		ctrl_style.content_margin_left = 5.0
-		ctrl_style.content_margin_right = 5.0
-		ctrl_style.content_margin_top = 1.0
-		ctrl_style.content_margin_bottom = 1.0
+		ctrl_style.set_corner_radius_all(3)
+		ctrl_style.content_margin_left = 7.0
+		ctrl_style.content_margin_right = 7.0
+		ctrl_style.content_margin_top = 2.0
+		ctrl_style.content_margin_bottom = 2.0
 		ctrl_panel.add_theme_stylebox_override("panel", ctrl_style)
 		ctrl_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		var ctrl_btn := Label.new()
 		ctrl_btn.text = btn_info[0]
-		ctrl_btn.add_theme_font_size_override("font_size", 9)
+		ctrl_btn.add_theme_font_size_override("font_size", 11)
 		ctrl_btn.add_theme_color_override("font_color", _XPTheme.TEXT_WHITE)
+		ctrl_btn.add_theme_constant_override("outline_size", 1)
+		ctrl_btn.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.3))
 		ctrl_btn.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		ctrl_panel.add_child(ctrl_btn)
 		ctrl_spacing.add_child(ctrl_panel)
+
+	# Menu bar (File, Edit, View, Help) like real XP windows
+	var menu_bar := PanelContainer.new()
+	var menu_style := StyleBoxFlat.new()
+	menu_style.bg_color = _XPTheme.WINDOW_BG
+	menu_style.border_color = Color(0.7, 0.7, 0.65)
+	menu_style.border_width_bottom = 1
+	menu_style.border_width_top = 0
+	menu_style.border_width_left = 0
+	menu_style.border_width_right = 0
+	menu_style.content_margin_left = 6.0
+	menu_style.content_margin_right = 6.0
+	menu_style.content_margin_top = 2.0
+	menu_style.content_margin_bottom = 2.0
+	menu_bar.add_theme_stylebox_override("panel", menu_style)
+	menu_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	vbox.add_child(menu_bar)
+	var menu_hbox := HBoxContainer.new()
+	menu_hbox.add_theme_constant_override("separation", 8)
+	menu_hbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	menu_bar.add_child(menu_hbox)
+	for menu_text: String in ["File", "Edit", "View", "Help"]:
+		var menu_label := Label.new()
+		menu_label.text = menu_text
+		menu_label.add_theme_font_size_override("font_size", 12)
+		menu_label.add_theme_color_override("font_color", _XPTheme.TEXT_COLOR)
+		menu_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		menu_hbox.add_child(menu_label)
 
 	# Steps list
 	_steps_container = VBoxContainer.new()

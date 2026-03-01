@@ -215,29 +215,43 @@ static func make_taskbar_style() -> StyleBoxFlat:
 
 static func make_taskbar_button_normal() -> StyleBoxFlat:
 	var s := StyleBoxFlat.new()
-	s.bg_color = Color(0.18, 0.45, 0.88)
-	s.border_color = Color(0.1, 0.3, 0.7)
+	s.bg_color = Color(0.20, 0.48, 0.90)
+	# 3D raised: lighter border + shadow for depth
+	s.border_color = Color(0.35, 0.60, 1.0)
 	s.set_border_width_all(1)
 	s.set_corner_radius_all(2)
 	s.content_margin_left = 6.0
 	s.content_margin_right = 6.0
 	s.content_margin_top = 3.0
 	s.content_margin_bottom = 3.0
+	s.shadow_color = Color(0.0, 0.0, 0.0, 0.2)
+	s.shadow_size = 1
+	s.shadow_offset = Vector2(1, 1)
 	return s
 
 
 static func make_taskbar_button_selected() -> StyleBoxFlat:
-	var s := make_taskbar_button_normal()
-	s.bg_color = Color(0.22, 0.52, 0.95)
-	s.border_color = Color(0.5, 0.7, 1.0)
-	s.set_border_width_all(2)
+	var s := StyleBoxFlat.new()
+	# Sunken look: darker bg, dark border, thicker top/left
+	s.bg_color = Color(0.16, 0.40, 0.80)
+	s.border_color = Color(0.08, 0.22, 0.55)
+	s.border_width_top = 2
+	s.border_width_left = 2
+	s.border_width_bottom = 1
+	s.border_width_right = 1
+	s.set_corner_radius_all(2)
+	s.content_margin_left = 7.0
+	s.content_margin_right = 5.0
+	s.content_margin_top = 4.0
+	s.content_margin_bottom = 2.0
+	s.shadow_size = 0
 	return s
 
 
 static func make_taskbar_button_empty() -> StyleBoxFlat:
 	var s := StyleBoxFlat.new()
-	s.bg_color = Color(0.15, 0.38, 0.78, 0.3)
-	s.border_color = Color(0.1, 0.3, 0.65, 0.3)
+	s.bg_color = Color(0.15, 0.38, 0.78, 0.15)
+	s.border_color = Color(0.1, 0.3, 0.65, 0.15)
 	s.set_border_width_all(1)
 	s.set_corner_radius_all(2)
 	s.content_margin_left = 6.0
@@ -250,22 +264,29 @@ static func make_taskbar_button_empty() -> StyleBoxFlat:
 static func make_start_button_style() -> StyleBoxFlat:
 	var s := StyleBoxFlat.new()
 	s.bg_color = START_BUTTON_GREEN
-	s.border_color = Color(0.15, 0.5, 0.12)
-	s.set_border_width_all(1)
-	s.corner_radius_top_left = 8
-	s.corner_radius_bottom_left = 8
-	s.corner_radius_top_right = 4
-	s.corner_radius_bottom_right = 4
-	s.content_margin_left = 12.0
-	s.content_margin_right = 12.0
+	# Lighter green top border for gradient hint
+	s.border_color = Color(0.28, 0.72, 0.22)
+	s.border_width_top = 2
+	s.border_width_bottom = 1
+	s.border_width_left = 1
+	s.border_width_right = 1
+	s.corner_radius_top_left = 10
+	s.corner_radius_bottom_left = 10
+	s.corner_radius_top_right = 2
+	s.corner_radius_bottom_right = 2
+	s.content_margin_left = 6.0
+	s.content_margin_right = 10.0
 	s.content_margin_top = 4.0
 	s.content_margin_bottom = 4.0
+	s.shadow_color = Color(0.0, 0.0, 0.0, 0.25)
+	s.shadow_size = 2
 	return s
 
 
 static func make_start_button_hover() -> StyleBoxFlat:
 	var s := make_start_button_style()
 	s.bg_color = START_BUTTON_HOVER
+	s.border_color = Color(0.35, 0.80, 0.30)
 	return s
 
 
@@ -285,17 +306,20 @@ static func make_system_tray_style() -> StyleBoxFlat:
 
 
 static func make_toolbar_style() -> StyleBoxFlat:
-	## XP-style info bar / toolbar for the HUD at the top
+	## XP-style info bar — blue like a title bar area
 	var s := StyleBoxFlat.new()
-	s.bg_color = Color(0.93, 0.92, 0.87, 0.9)
-	s.border_color = Color(0.7, 0.7, 0.65)
-	s.set_border_width_all(1)
+	s.bg_color = Color(0.10, 0.32, 0.72, 0.85)
+	s.border_color = Color(0.25, 0.50, 0.90)
+	s.border_width_top = 1
+	s.border_width_bottom = 1
+	s.border_width_left = 0
+	s.border_width_right = 0
 	s.set_corner_radius_all(0)
 	s.content_margin_left = 8.0
 	s.content_margin_right = 8.0
 	s.content_margin_top = 3.0
 	s.content_margin_bottom = 3.0
-	s.shadow_color = Color(0.0, 0.0, 0.0, 0.1)
+	s.shadow_color = Color(0.0, 0.0, 0.0, 0.15)
 	s.shadow_size = 2
 	return s
 

@@ -111,7 +111,15 @@ func _update_style() -> void:
 func _draw() -> void:
 	if not _is_occupied:
 		return
-	# Draw patience bar at bottom of button
+	# 3D highlight/shadow for depth
+	if not _is_selected:
+		# Raised: bright top, dark bottom
+		draw_line(Vector2(2, 1), Vector2(size.x - 2, 1), Color(1.0, 1.0, 1.0, 0.15), 1.0)
+		draw_line(Vector2(2, size.y - 1), Vector2(size.x - 2, size.y - 1), Color(0.0, 0.0, 0.0, 0.15), 1.0)
+	else:
+		# Sunken: dark top, bright bottom
+		draw_line(Vector2(2, 1), Vector2(size.x - 2, 1), Color(0.0, 0.0, 0.0, 0.2), 1.0)
+	# Patience bar at bottom of button
 	var bar_height := 3.0
 	var bar_width: float = size.x * _patience_ratio
 	var color := Color.GREEN_YELLOW

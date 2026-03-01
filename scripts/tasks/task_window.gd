@@ -5,6 +5,7 @@ extends PanelContainer
 ## This is the core gameplay widget - equivalent to a prep station in CSD.
 
 const _XPTheme := preload("res://scripts/ui/xp_theme_builder.gd")
+const _XPTitleBar := preload("res://scripts/ui/xp_title_bar.gd")
 
 signal step_completed(step_index: int)
 signal task_completed(perfect: bool)
@@ -20,6 +21,7 @@ var _is_waiting: bool = false
 var _task_color: Color = _XPTheme.TITLE_BAR_BLUE
 
 var _title_bar: PanelContainer
+var _title_bar_gradient: Control  # XPTitleBar instance
 var _title_label: Label
 var _progress_label: Label
 var _steps_container: VBoxContainer
@@ -106,10 +108,10 @@ func is_active() -> bool:
 # --- Internal ---
 
 func _apply_task_color() -> void:
-	# Title bar uses the task color
-	var title_style := _XPTheme.make_title_bar_style()
-	title_style.bg_color = _task_color
-	_title_bar.add_theme_stylebox_override("panel", title_style)
+	# Title bar gradient uses the task color
+	if _title_bar_gradient:
+		_title_bar_gradient.base_color = _task_color
+		_title_bar_gradient.queue_redraw()
 
 	# Window border tinted to match (semi-transparent blend)
 	var body_style := _XPTheme.make_window_body_style()
@@ -261,40 +263,77 @@ func _build_ui() -> void:
 	vbox.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(vbox)
 
-	# Title bar
+	# Title bar: MarginContainer with gradient drawn behind content
 	_title_bar = PanelContainer.new()
-	_title_bar.add_theme_stylebox_override("panel", _XPTheme.make_title_bar_style())
+	var title_bar_style := StyleBoxFlat.new()
+	title_bar_style.bg_color = _XPTheme.TITLE_BAR_BLUE  # Fallback color
+	title_bar_style.corner_radius_top_left = 8
+	title_bar_style.corner_radius_top_right = 8
+	title_bar_style.content_margin_left = 8.0
+	title_bar_style.content_margin_right = 4.0
+	title_bar_style.content_margin_top = 4.0
+	title_bar_style.content_margin_bottom = 4.0
+	_title_bar.add_theme_stylebox_override("panel", title_bar_style)
 	vbox.add_child(_title_bar)
 
 	var title_hbox := HBoxContainer.new()
 	title_hbox.add_theme_constant_override("separation", 4)
 	_title_bar.add_child(title_hbox)
 
+	# Gradient overlay drawn on top of the PanelContainer background
+	_title_bar_gradient = _XPTitleBar.new()
+	_title_bar_gradient.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_title_bar_gradient.show_behind_parent = true
+	_title_bar.add_child(_title_bar_gradient)
+
 	_title_label = Label.new()
 	_title_label.text = "Task"
 	_title_label.add_theme_color_override("font_color", _XPTheme.TEXT_WHITE)
-	_title_label.add_theme_font_size_override("font_size", 13)
+	_title_label.add_theme_font_size_override("font_size", 14)
+	_title_label.add_theme_constant_override("outline_size", 1)
+	_title_label.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.3))
 	_title_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_title_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	title_hbox.add_child(_title_label)
 
 	_progress_label = Label.new()
 	_progress_label.text = ""
 	_progress_label.add_theme_color_override("font_color", Color(0.8, 0.9, 1.0))
 	_progress_label.add_theme_font_size_override("font_size", 11)
+	_progress_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	title_hbox.add_child(_progress_label)
 
-	# Window control buttons (decorative, XP-style)
+	# Window control buttons (decorative, XP-style with 3D bevel)
 	var ctrl_spacing := HBoxContainer.new()
 	ctrl_spacing.add_theme_constant_override("separation", 2)
+	ctrl_spacing.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	title_hbox.add_child(ctrl_spacing)
-	for btn_info: Array in [["_", Color(0.2, 0.4, 0.8)], ["[]", Color(0.2, 0.4, 0.8)], ["X", Color(0.7, 0.2, 0.15)]]:
+	for btn_info: Array in [
+		["_", Color(0.22, 0.45, 0.88), Color(0.35, 0.60, 1.0)],
+		["[]", Color(0.22, 0.45, 0.88), Color(0.35, 0.60, 1.0)],
+		["X", Color(0.78, 0.20, 0.15), Color(0.95, 0.40, 0.35)],
+	]:
+		var ctrl_panel := PanelContainer.new()
+		var ctrl_style := StyleBoxFlat.new()
+		ctrl_style.bg_color = btn_info[1]
+		# 3D bevel: lighter top/left border
+		ctrl_style.border_color = btn_info[2]
+		ctrl_style.border_width_top = 1
+		ctrl_style.border_width_left = 1
+		ctrl_style.border_width_bottom = 1
+		ctrl_style.border_width_right = 1
+		ctrl_style.set_corner_radius_all(2)
+		ctrl_style.content_margin_left = 5.0
+		ctrl_style.content_margin_right = 5.0
+		ctrl_style.content_margin_top = 1.0
+		ctrl_style.content_margin_bottom = 1.0
+		ctrl_panel.add_theme_stylebox_override("panel", ctrl_style)
+		ctrl_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		var ctrl_btn := Label.new()
 		ctrl_btn.text = btn_info[0]
-		ctrl_btn.add_theme_font_size_override("font_size", 10)
+		ctrl_btn.add_theme_font_size_override("font_size", 9)
 		ctrl_btn.add_theme_color_override("font_color", _XPTheme.TEXT_WHITE)
-		var ctrl_style := _XPTheme.make_window_control_button(btn_info[1])
-		var ctrl_panel := PanelContainer.new()
-		ctrl_panel.add_theme_stylebox_override("panel", ctrl_style)
+		ctrl_btn.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		ctrl_panel.add_child(ctrl_btn)
 		ctrl_spacing.add_child(ctrl_panel)
 

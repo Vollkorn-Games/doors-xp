@@ -8,6 +8,9 @@ const TaskWindowScript := preload("res://scripts/tasks/task_window.gd")
 const TaskbarButtonScript := preload("res://scripts/ui/taskbar_button.gd")
 const ScorePopupScript := preload("res://scripts/ui/score_popup.gd")
 const XPWallpaper := preload("res://scripts/ui/xp_wallpaper.gd")
+const DesktopIconScript := preload("res://scripts/ui/desktop_icon.gd")
+const WindowsFlagScript := preload("res://scripts/ui/windows_flag.gd")
+const TaskbarBgScript := preload("res://scripts/ui/xp_taskbar_bg.gd")
 
 const MAX_SLOTS := 8
 
@@ -74,23 +77,56 @@ func _setup_visuals() -> void:
 	wallpaper.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_background.add_child(wallpaper)
 	_setup_desktop_icons()
-	_taskbar_panel.add_theme_stylebox_override("panel", XPTheme.make_taskbar_style())
 
-	# Start button with Windows flag
-	_start_button.text = "start"
+	# Taskbar: transparent panel with gradient background behind content
+	var taskbar_style := StyleBoxFlat.new()
+	taskbar_style.bg_color = Color.TRANSPARENT
+	taskbar_style.set_border_width_all(0)
+	taskbar_style.content_margin_left = 4.0
+	taskbar_style.content_margin_right = 4.0
+	taskbar_style.content_margin_top = 3.0
+	taskbar_style.content_margin_bottom = 3.0
+	_taskbar_panel.add_theme_stylebox_override("panel", taskbar_style)
+	var taskbar_bg := TaskbarBgScript.new()
+	taskbar_bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_taskbar_panel.add_child(taskbar_bg)
+	_taskbar_panel.move_child(taskbar_bg, 0)
+
+	# Start button with Windows flag icon + "start" text
+	_start_button.text = ""
 	_start_button.add_theme_stylebox_override("normal", XPTheme.make_start_button_style())
 	_start_button.add_theme_stylebox_override("hover", XPTheme.make_start_button_hover())
 	_start_button.add_theme_stylebox_override("pressed", XPTheme.make_start_button_style())
-	_start_button.add_theme_color_override("font_color", XPTheme.TEXT_WHITE)
-	_start_button.add_theme_color_override("font_hover_color", XPTheme.TEXT_WHITE)
-	_start_button.add_theme_font_size_override("font_size", 13)
+	var start_hbox := HBoxContainer.new()
+	start_hbox.add_theme_constant_override("separation", 4)
+	start_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	start_hbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_start_button.add_child(start_hbox)
+	var flag := WindowsFlagScript.new()
+	flag.custom_minimum_size = Vector2(16, 16)
+	start_hbox.add_child(flag)
+	var start_label := Label.new()
+	start_label.text = "start"
+	start_label.add_theme_color_override("font_color", XPTheme.TEXT_WHITE)
+	start_label.add_theme_font_size_override("font_size", 14)
+	start_label.add_theme_constant_override("outline_size", 1)
+	start_label.add_theme_color_override("font_outline_color", Color(1.0, 1.0, 1.0, 0.3))
+	start_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	start_hbox.add_child(start_label)
 
 	# System tray / clock area — sunken style
 	var tray_panel := PanelContainer.new()
 	tray_panel.add_theme_stylebox_override("panel", XPTheme.make_system_tray_style())
 	_clock_label.get_parent().remove_child(_clock_label)
 	tray_panel.add_child(_clock_label)
-	_taskbar_panel.get_child(0).add_child(tray_panel)
+	# TaskbarContent is the scene-defined HBox; find it by type since gradient bg was inserted at index 0
+	var taskbar_content: HBoxContainer = null
+	for child in _taskbar_panel.get_children():
+		if child is HBoxContainer:
+			taskbar_content = child
+			break
+	if taskbar_content:
+		taskbar_content.add_child(tray_panel)
 	_clock_label.add_theme_color_override("font_color", XPTheme.TEXT_WHITE)
 	_clock_label.add_theme_font_size_override("font_size", 12)
 
@@ -131,17 +167,20 @@ func _setup_hud_style() -> void:
 	hud.add_child(toolbar)
 
 	_score_label.add_theme_font_size_override("font_size", 15)
+	_score_label.add_theme_color_override("font_color", XPTheme.TEXT_WHITE)
 	_combo_label.add_theme_font_size_override("font_size", 13)
+	_combo_label.add_theme_color_override("font_color", XPTheme.TEXT_WHITE)
 	_day_label.add_theme_font_size_override("font_size", 13)
+	_day_label.add_theme_color_override("font_color", XPTheme.TEXT_WHITE)
 
 
 func _setup_desktop_icons() -> void:
 	var icons_data := [
-		{"name": "My Computer", "symbol": "PC", "color": Color(0.15, 0.35, 0.65), "pos": Vector2(20, 70)},
-		{"name": "My Documents", "symbol": "My", "color": Color(0.7, 0.55, 0.15), "pos": Vector2(20, 160)},
-		{"name": "Recycle Bin", "symbol": "Bin", "color": Color(0.4, 0.5, 0.4), "pos": Vector2(20, 250)},
-		{"name": "Internet\nExplorer", "symbol": "IE", "color": Color(0.1, 0.45, 0.75), "pos": Vector2(20, 340)},
-		{"name": "Control\nPanel", "symbol": "CP", "color": Color(0.55, 0.3, 0.15), "pos": Vector2(20, 430)},
+		{"name": "My Computer", "type": DesktopIconScript.IconType.MY_COMPUTER, "pos": Vector2(16, 70)},
+		{"name": "My Documents", "type": DesktopIconScript.IconType.MY_DOCUMENTS, "pos": Vector2(16, 160)},
+		{"name": "Recycle Bin", "type": DesktopIconScript.IconType.RECYCLE_BIN, "pos": Vector2(16, 250)},
+		{"name": "Internet\nExplorer", "type": DesktopIconScript.IconType.INTERNET_EXPLORER, "pos": Vector2(16, 340)},
+		{"name": "Control\nPanel", "type": DesktopIconScript.IconType.CONTROL_PANEL, "pos": Vector2(16, 430)},
 	]
 	for icon_info: Dictionary in icons_data:
 		var icon_container := VBoxContainer.new()
@@ -149,29 +188,9 @@ func _setup_desktop_icons() -> void:
 		icon_container.alignment = BoxContainer.ALIGNMENT_CENTER
 		icon_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
-		var icon_rect := PanelContainer.new()
-		var icon_style := StyleBoxFlat.new()
-		icon_style.bg_color = icon_info["color"]
-		icon_style.set_corner_radius_all(4)
-		icon_style.border_color = Color(1.0, 1.0, 1.0, 0.2)
-		icon_style.set_border_width_all(1)
-		icon_style.content_margin_left = 10.0
-		icon_style.content_margin_right = 10.0
-		icon_style.content_margin_top = 8.0
-		icon_style.content_margin_bottom = 8.0
-		icon_style.shadow_color = Color(0.0, 0.0, 0.0, 0.3)
-		icon_style.shadow_size = 2
-		icon_rect.add_theme_stylebox_override("panel", icon_style)
-		icon_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
-
-		var icon_label := Label.new()
-		icon_label.text = icon_info["symbol"]
-		icon_label.add_theme_color_override("font_color", XPTheme.TEXT_WHITE)
-		icon_label.add_theme_font_size_override("font_size", 18)
-		icon_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		icon_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		icon_rect.add_child(icon_label)
-		icon_container.add_child(icon_rect)
+		var icon := DesktopIconScript.new()
+		icon.icon_type = icon_info["type"] as DesktopIconScript.IconType
+		icon_container.add_child(icon)
 
 		var name_label := Label.new()
 		name_label.text = icon_info["name"]

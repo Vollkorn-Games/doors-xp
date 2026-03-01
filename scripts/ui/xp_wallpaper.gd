@@ -39,8 +39,24 @@ const CLOUD_BUBBLES := [
 ]
 
 
+const GRASS_SHADER := preload("res://shaders/grass_overlay.gdshader")
+
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_setup_grass_overlay()
+
+
+func _setup_grass_overlay() -> void:
+	var overlay := ColorRect.new()
+	overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	overlay.color = Color.WHITE  # Shader overrides this
+	var mat := ShaderMaterial.new()
+	mat.shader = GRASS_SHADER
+	mat.set_shader_parameter("resolution", Vector2(1024.0, 768.0))
+	mat.set_shader_parameter("hill_base", 0.58)
+	overlay.material = mat
+	add_child(overlay)
 
 
 func _draw() -> void:

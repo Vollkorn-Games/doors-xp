@@ -70,5 +70,6 @@ base_score = 160
 mistake_penalty = 30
 max_mistakes = 3
 difficulty = 2
+task_color = Color(0.2, 0.6, 0.25, 1)
 reputation_reward = 0.1
 reputation_penalty = 0.16

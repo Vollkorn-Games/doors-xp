@@ -17,6 +17,7 @@ var _current_step_index: int = 0
 var _mistakes: int = 0
 var _is_active: bool = false
 var _is_waiting: bool = false
+var _task_color: Color = _XPTheme.TITLE_BAR_BLUE
 
 var _title_bar: PanelContainer
 var _title_label: Label
@@ -26,6 +27,7 @@ var _step_labels: Array[Label] = []
 var _current_step_panel: PanelContainer
 var _key_hint_label: Label
 var _step_action_label: Label
+var _step_desc_label: Label
 var _patience_bar: ProgressBar
 var _wait_timer: Timer
 var _mistake_label: Label
@@ -48,11 +50,15 @@ func initialize(task_data: Resource, slot_index: int = -1) -> void:
 	_mistakes = 0
 	_is_active = true
 	_is_waiting = false
+	_task_color = task_data.task_color
 
 	_title_label.text = task_data.task_name
 	_patience_bar.max_value = 1.0
 	_patience_bar.value = 1.0
 	_mistake_label.text = ""
+
+	# Apply task-specific color to title bar and window border
+	_apply_task_color()
 
 	_build_steps_display()
 	_show_current_step()
@@ -99,6 +105,21 @@ func is_active() -> bool:
 
 # --- Internal ---
 
+func _apply_task_color() -> void:
+	# Title bar uses the task color
+	var title_style := _XPTheme.make_title_bar_style()
+	title_style.bg_color = _task_color
+	_title_bar.add_theme_stylebox_override("panel", title_style)
+
+	# Window border tinted to match (semi-transparent blend)
+	var body_style := _XPTheme.make_window_body_style()
+	body_style.border_color = Color(_task_color, 0.5)
+	add_theme_stylebox_override("panel", body_style)
+
+	# Key hint label colored to match
+	_key_hint_label.add_theme_color_override("font_color", _task_color)
+
+
 func _advance_step() -> void:
 	_mark_step_complete(_current_step_index)
 	step_completed.emit(_current_step_index)
@@ -119,6 +140,7 @@ func _start_wait(duration: float) -> void:
 	_is_waiting = true
 	_key_hint_label.text = "[...]"
 	_step_action_label.text = _task_data.steps[_current_step_index].label
+	_step_desc_label.text = _task_data.steps[_current_step_index].description
 	_highlight_current_step()
 	_wait_timer.wait_time = duration
 	_wait_timer.start()
@@ -165,6 +187,7 @@ func _flash_success(perfect: bool) -> void:
 	add_theme_stylebox_override("panel", body_style)
 	_key_hint_label.text = "DONE!" if not perfect else "PERFECT!"
 	_step_action_label.text = ""
+	_step_desc_label.text = ""
 
 
 func _flash_error() -> void:
@@ -189,6 +212,7 @@ func _show_current_step() -> void:
 		key_display = "SPACE"
 	_key_hint_label.text = "[%s]" % key_display
 	_step_action_label.text = step.label
+	_step_desc_label.text = step.description
 	_progress_label.text = "Step %d/%d" % [_current_step_index + 1, _task_data.steps.size()]
 	_highlight_current_step()
 
@@ -205,7 +229,7 @@ func _highlight_current_step() -> void:
 			continue # Already marked complete
 		elif i == _current_step_index:
 			_step_labels[i].text = ARROW + _task_data.steps[i].label
-			_step_labels[i].add_theme_color_override("font_color", _XPTheme.TITLE_BAR_BLUE)
+			_step_labels[i].add_theme_color_override("font_color", _task_color)
 			_step_labels[i].add_theme_font_size_override("font_size", 14)
 		else:
 			_step_labels[i].text = EMPTY + _task_data.steps[i].label
@@ -280,10 +304,14 @@ func _build_ui() -> void:
 	_current_step_panel.add_theme_stylebox_override("panel", step_style)
 	vbox.add_child(_current_step_panel)
 
+	var step_vbox := VBoxContainer.new()
+	step_vbox.add_theme_constant_override("separation", 4)
+	_current_step_panel.add_child(step_vbox)
+
 	var step_hbox := HBoxContainer.new()
 	step_hbox.add_theme_constant_override("separation", 12)
 	step_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	_current_step_panel.add_child(step_hbox)
+	step_vbox.add_child(step_hbox)
 
 	_key_hint_label = Label.new()
 	_key_hint_label.text = "[?]"
@@ -295,6 +323,14 @@ func _build_ui() -> void:
 	_step_action_label.text = "..."
 	_step_action_label.add_theme_font_size_override("font_size", 18)
 	step_hbox.add_child(_step_action_label)
+
+	# Step description label (flavor text)
+	_step_desc_label = Label.new()
+	_step_desc_label.text = ""
+	_step_desc_label.add_theme_font_size_override("font_size", 11)
+	_step_desc_label.add_theme_color_override("font_color", Color(0.45, 0.45, 0.42))
+	_step_desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	step_vbox.add_child(_step_desc_label)
 
 	# Mistake label
 	_mistake_label = Label.new()

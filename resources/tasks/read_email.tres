@@ -29,9 +29,9 @@ wait_time = 0.0
 
 [sub_resource type="Resource" id="step4"]
 script = ExtResource("2_ts")
-label = "Click Reply"
+label = "Compose Reply"
 key_action = "c"
-description = "Click the reply button"
+description = "Type your response"
 is_timed_wait = false
 wait_time = 0.0
 
@@ -54,5 +54,6 @@ base_score = 100
 mistake_penalty = 25
 max_mistakes = 3
 difficulty = 1
+task_color = Color(0.2, 0.45, 0.75, 1)
 reputation_reward = 0.1
 reputation_penalty = 0.15

@@ -12,6 +12,7 @@ extends Resource
 @export var mistake_penalty: int = 25
 @export var max_mistakes: int = 3
 @export_range(1, 5) var difficulty: int = 1
+@export var task_color: Color = Color(0.0, 0.34, 0.84)  ## Title bar / accent color
 @export var reputation_reward: float = 0.1
 @export var reputation_penalty: float = 0.15
 

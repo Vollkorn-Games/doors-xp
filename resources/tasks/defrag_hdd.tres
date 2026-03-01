@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="TaskData" load_steps=9 format=3]
+[gd_resource type="Resource" script_class="TaskData" load_steps=10 format=3]
 
 [ext_resource type="Script" path="res://scripts/tasks/task_data.gd" id="1_td"]
 [ext_resource type="Script" path="res://scripts/tasks/task_step.gd" id="2_ts"]
@@ -37,21 +37,29 @@ wait_time = 0.0
 
 [sub_resource type="Resource" id="step5"]
 script = ExtResource("2_ts")
+label = "Analyzing disk..."
+key_action = ""
+description = "Checking fragmentation level..."
+is_timed_wait = true
+wait_time = 2.0
+
+[sub_resource type="Resource" id="step6"]
+script = ExtResource("2_ts")
 label = "Defragment Now"
 key_action = "d"
 description = "Start the defragmentation"
 is_timed_wait = false
 wait_time = 0.0
 
-[sub_resource type="Resource" id="step6"]
+[sub_resource type="Resource" id="step7"]
 script = ExtResource("2_ts")
 label = "Defragmenting..."
 key_action = ""
-description = "Please wait while the disk is defragmented"
+description = "Reorganizing disk clusters..."
 is_timed_wait = true
 wait_time = 3.0
 
-[sub_resource type="Resource" id="step7"]
+[sub_resource type="Resource" id="step8"]
 script = ExtResource("2_ts")
 label = "Close Window"
 key_action = "enter"
@@ -64,11 +72,12 @@ script = ExtResource("1_td")
 task_name = "Defrag HDD"
 task_id = &"defrag_hdd"
 description = "The hard drive is fragmented! Defrag it to improve performance."
-steps = [SubResource("step1"), SubResource("step2"), SubResource("step3"), SubResource("step4"), SubResource("step5"), SubResource("step6"), SubResource("step7")]
-time_limit = 45.0
-base_score = 180
+steps = [SubResource("step1"), SubResource("step2"), SubResource("step3"), SubResource("step4"), SubResource("step5"), SubResource("step6"), SubResource("step7"), SubResource("step8")]
+time_limit = 50.0
+base_score = 200
 mistake_penalty = 35
 max_mistakes = 3
 difficulty = 2
+task_color = Color(0.45, 0.25, 0.7, 1)
 reputation_reward = 0.12
 reputation_penalty = 0.18

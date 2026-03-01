@@ -72,15 +72,17 @@ All cross-system communication goes through `EventBus` signals. Key signals:
 
 ### Current Tasks
 
-| Task | Steps | Time | Score | Difficulty |
-|------|-------|------|-------|------------|
-| Print Document | O→F→P→C→Enter | 40s | 80 | 1 |
-| Read Email | O→R→S→C→Enter | 45s | 100 | 1 |
-| Virus Alert | A→O→S→(wait 2s)→Q→D | 50s | 150 | 1 |
-| Organize Files | E→A→X→O→V→Enter | 35s | 120 | 2 |
-| Install Software | I→R→A→C→N→(wait 2.5s)→Enter | 50s | 160 | 2 |
-| Defrag HDD | M→R→P→T→D→(wait 3s)→Enter | 45s | 180 | 2 |
-| Blue Screen Fix | Space→F→(wait 2s)→D→U→I→(wait 2s)→R→Enter | 55s | 250 | 3 |
+| Task | Steps | Time | Score | Diff | Color |
+|------|-------|------|-------|------|-------|
+| Read Email | O→R→S→C→Enter | 45s | 100 | 1 | Blue |
+| Print Document | O→F→P→C→(wait 1.5s)→Enter | 40s | 80 | 1 | Brown |
+| Organize Files | E→A→X→O→V→(wait 1s)→Enter | 35s | 100 | 1 | Gold |
+| Virus Alert | A→O→S→(wait 2s)→Q→D | 50s | 150 | 2 | Red |
+| Install Software | I→R→A→C→N→(wait 2.5s)→Enter | 50s | 160 | 2 | Green |
+| Defrag HDD | M→R→P→T→(wait 2s)→D→(wait 3s)→Enter | 50s | 200 | 2 | Purple |
+| Blue Screen Fix | Space→F→(wait 2s)→D→U→I→(wait 2s)→R→Enter | 55s | 250 | 3 | Dark Blue |
+
+Each task has a unique `task_color` that tints its title bar, window border, key hints, and taskbar button.
 
 ## Key Design Decisions
 
@@ -103,7 +105,7 @@ All cross-system communication goes through `EventBus` signals. Key signals:
 **Phase 2 in progress.** Core loop verified. Visual polish and content expansion underway.
 
 ### Phase 2 additions (done)
-- 4 new task types: Organize Files (diff 2), Install Software (diff 2), Defrag HDD (diff 2), Blue Screen Fix (diff 3)
+- 4 new task types: Organize Files, Install Software, Defrag HDD, Blue Screen Fix
 - Floating score popup on task completion (+120 rises and fades)
 - Combo counter pulse animation (scale bounce on increment)
 - Reputation bar color changes (green → yellow → red based on value)
@@ -113,6 +115,10 @@ All cross-system communication goes through `EventBus` signals. Key signals:
 - Game Over screen: BSOD-style with session stats and "press any key" prompt
 - New scene: `scenes/game_over.tscn` with `scripts/ui/game_over.gd`
 - New script: `scripts/ui/score_popup.gd` (floating score text)
+- Per-task color coding: title bar, window border, key hints, taskbar buttons tinted by task_color
+- Step description flavor text shown in task window below key hint
+- Task mechanical differentiation: Print/Organize/Defrag now have unique timed waits
+- Difficulty rebalance: Virus Alert → diff 2, Organize Files → diff 1 (4 diff-1, 3 diff-2, 1 diff-3 → better day-1 variety)
 
 ### What's Missing (Phase 3+ ideas)
 
@@ -128,10 +134,11 @@ All cross-system communication goes through `EventBus` signals. Key signals:
 
 ### Adding a New Task
 
-1. Create `resources/tasks/my_task.tres` — set task_name, steps (Array of TaskStep sub-resources), time_limit, base_score, difficulty, etc.
-2. Each TaskStep needs: label, key_action (lowercase letter or "enter"/"space"), optionally is_timed_wait + wait_time
-3. TaskManager auto-discovers all `.tres` files in `resources/tasks/` on day start
-4. Set difficulty ≥ 2 to make it appear only on day 2+
+1. Create `resources/tasks/my_task.tres` — set task_name, steps (Array of TaskStep sub-resources), time_limit, base_score, difficulty, task_color, etc.
+2. Each TaskStep needs: label, key_action (lowercase letter or "enter"/"space"), description (flavor text), optionally is_timed_wait + wait_time
+3. Set `task_color` to a unique Color — this tints the title bar, window border, key hints, and taskbar button
+4. TaskManager auto-discovers all `.tres` files in `resources/tasks/` on day start
+5. Set difficulty ≥ 2 to make it appear only on day 2+
 
 ### Using MCP Tools
 

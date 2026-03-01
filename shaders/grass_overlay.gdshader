@@ -1,23 +1,25 @@
 shader_type canvas_item;
 
-// Grass blade silhouettes along the hill crest + subtle surface texture.
-// Matches the hill curve from xp_wallpaper.gd.
+// Smooth manicured-lawn grass texture overlay.
+// Adds subtle noise-based color variation and soft lighting to the hill surface.
+// No grass blade silhouettes — faithful to the original Bliss look.
 
 uniform vec2 resolution = vec2(1024.0, 768.0);
-uniform float hill_base = 0.58;
-uniform float wind_speed : hint_range(0.0, 3.0) = 0.8;
-uniform float wind_strength : hint_range(0.0, 0.01) = 0.004;
 
-// Hash functions
-float hash(float n) {
-	return fract(sin(n * 127.1) * 43758.5453);
+// Hill shape parameters (must match xp_wallpaper.gd _hill_curve)
+float get_hill_y(float x) {
+	float curve = 0.0;
+	curve += sin((x - 0.1) * 3.14159 * 0.65) * 0.18;
+	curve += sin(x * 3.14159 * 1.8 + 0.5) * 0.03;
+	curve += sin(x * 3.14159 * 5.0 + 1.5) * 0.005;
+	return 0.68 - curve;
 }
 
+// Hash / noise
 float hash2(vec2 p) {
 	return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
 }
 
-// Simple value noise
 float noise(vec2 p) {
 	vec2 i = floor(p);
 	vec2 f = fract(p);
@@ -29,111 +31,47 @@ float noise(vec2 p) {
 	return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
 }
 
-// Hill curve Y in UV space (must match xp_wallpaper.gd sine waves)
-float get_hill_y(float x) {
-	float curve = 0.0;
-	curve += sin(x * 3.14159 * 0.85 + 0.4) * 0.10;
-	curve += sin(x * 3.14159 * 2.2 + 1.0) * 0.025;
-	curve += sin(x * 3.14159 * 4.5 + 2.5) * 0.008;
-	return hill_base + curve;
+float fbm(vec2 p) {
+	float v = 0.0;
+	v += noise(p) * 0.5;
+	v += noise(p * 2.0 + vec2(5.3, 1.7)) * 0.25;
+	v += noise(p * 4.0 + vec2(9.1, 3.4)) * 0.125;
+	return v;
 }
 
 void fragment() {
 	vec2 uv = UV;
-	vec2 px = 1.0 / resolution; // Size of one pixel in UV space
 
 	float hill_y = get_hill_y(uv.x);
 
-	// === GRASS BLADE SILHOUETTES along the hill crest ===
-	float blade_alpha = 0.0;
-	vec3 blade_color = vec3(0.0);
+	// Smooth fade-in at the hill edge (transparent above hill)
+	float edge_fade = smoothstep(hill_y - 0.005, hill_y + 0.015, uv.y);
 
-	// Blade spacing: one blade every ~5 pixels
-	float blade_spacing = 5.0;
-	float pixel_x = uv.x * resolution.x;
-	float col_idx = floor(pixel_x / blade_spacing);
+	// === Grass texture: layered noise for natural lawn look ===
+	vec2 grass_uv = uv * resolution;
 
-	// Check this column and neighbors for blade overlap
-	for (float di = -1.0; di <= 1.0; di += 1.0) {
-		float ci = col_idx + di;
-		float r1 = hash(ci * 1.7);
-		float r2 = hash(ci * 3.1 + 50.0);
-		float r3 = hash(ci * 5.3 + 100.0);
+	// Fine grass grain (directional, slightly vertical)
+	float fine_grain = noise(vec2(grass_uv.x * 0.12, grass_uv.y * 0.03));
 
-		// Blade center X in UV space (with random jitter)
-		float bx = (ci * blade_spacing + blade_spacing * 0.5 + (r1 - 0.5) * blade_spacing * 0.5) * px.x;
+	// Medium-scale color patches (clumps of slightly different grass color)
+	float patches = fbm(grass_uv * 0.015 + vec2(42.0, 17.0));
 
-		// Hill Y at this blade's X position
-		float by_base = get_hill_y(bx);
+	// Large-scale variation (broad light/shadow areas)
+	float broad = fbm(grass_uv * 0.005 + vec2(100.0, 200.0));
 
-		// Blade height: 10-24 pixels
-		float b_height = (10.0 + r2 * 14.0) * px.y;
-		float by_top = by_base - b_height;
+	float pattern = fine_grain * 0.3 + patches * 0.45 + broad * 0.25;
 
-		// Wind sway (stronger at tip)
-		float wind = sin(TIME * wind_speed + ci * 0.37 + r3 * 6.28) * wind_strength;
+	// Color modulation
+	vec3 grass_light = vec3(0.38, 0.74, 0.22);
+	vec3 grass_dark = vec3(0.20, 0.50, 0.10);
+	vec3 grass_color = mix(grass_dark, grass_light, pattern);
 
-		if (uv.y >= by_top && uv.y <= by_base) {
-			// 0 at tip, 1 at base
-			float progress = (uv.y - by_top) / max(by_base - by_top, 0.001);
+	// Depth darkening: lower on screen = slightly darker
+	float depth_factor = smoothstep(0.45, 0.95, uv.y);
+	grass_color *= mix(1.05, 0.85, depth_factor);
 
-			// Blade width: thin at tip (~0.5px), wider at base (~2.5px)
-			float b_width = mix(0.6, 2.8, progress) * px.x;
+	// Very subtle surface alpha — this blends with the polygon colors beneath
+	float alpha = 0.22 * edge_fade;
 
-			// Apply wind (more sway at tip)
-			float wind_offset = wind * (1.0 - progress);
-			float dx = abs(uv.x - bx - wind_offset);
-
-			float a = smoothstep(b_width, b_width * 0.15, dx);
-			if (a > blade_alpha) {
-				blade_alpha = a;
-				// Per-blade color variation
-				float cm = hash(ci * 7.7 + 200.0);
-				blade_color = mix(
-					vec3(0.24, 0.56, 0.13),
-					vec3(0.40, 0.74, 0.24),
-					cm
-				);
-				// Lighter at tip, darker at base
-				blade_color *= mix(1.15, 0.75, progress);
-			}
-		}
-	}
-
-	// === SURFACE GRASS TEXTURE on the hill ===
-	float surface_alpha = 0.0;
-	vec3 surface_color = vec3(0.0);
-
-	if (uv.y > hill_y) {
-		// Layered noise for fibrous grass look
-		float n1 = noise(vec2(uv.x * resolution.x * 0.15, uv.y * resolution.y * 0.04));
-		float n2 = noise(uv * resolution * 0.08 + vec2(73.0, 41.0));
-
-		// Vertical streak pattern (grass fiber direction)
-		float streak = noise(vec2(uv.x * resolution.x * 0.25, uv.y * resolution.y * 0.015));
-
-		float pattern = n1 * 0.4 + streak * 0.4 + n2 * 0.2;
-
-		surface_color = mix(
-			vec3(0.20, 0.48, 0.09),
-			vec3(0.36, 0.70, 0.20),
-			pattern
-		);
-
-		// Fade in from the hill edge
-		float edge_dist = (uv.y - hill_y) / 0.03;
-		surface_alpha = 0.25 * smoothstep(0.0, 1.0, edge_dist);
-	}
-
-	// === Combine layers ===
-	float final_alpha = max(surface_alpha, blade_alpha * 0.9);
-	vec3 final_color = blade_color;
-
-	if (blade_alpha < 0.01) {
-		final_color = surface_color;
-	} else if (surface_alpha > 0.01) {
-		final_color = mix(surface_color, blade_color, blade_alpha);
-	}
-
-	COLOR = vec4(final_color, final_alpha);
+	COLOR = vec4(grass_color, alpha);
 }

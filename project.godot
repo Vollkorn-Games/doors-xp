@@ -25,6 +25,7 @@ TaskManager="*res://scripts/autoload/task_manager.gd"
 
 window/size/viewport_width=1024
 window/size/viewport_height=768
+window/size/mode=3.0
 window/stretch/mode="canvas_items"
 
 [input]

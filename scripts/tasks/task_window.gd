@@ -1,11 +1,23 @@
 class_name TaskWindow
 extends PanelContainer
 
-## Displays a task's steps and handles key input for step progression.
-## This is the core gameplay widget - equivalent to a prep station in CSD.
+## Displays a task's visual content and handles key input for step progression.
+## This is the core gameplay widget — equivalent to a prep station in CSD.
 
 const _XPTheme := preload("res://scripts/ui/xp_theme_builder.gd")
 const _XPTitleBar := preload("res://scripts/ui/xp_title_bar.gd")
+const _FallbackVisual := preload("res://scripts/tasks/visuals/visual_fallback.gd")
+
+# Visual scripts mapped by task_id
+const _Visuals := {
+	&"print_document": preload("res://scripts/tasks/visuals/visual_print_document.gd"),
+	&"read_email": preload("res://scripts/tasks/visuals/visual_read_email.gd"),
+	&"virus_alert": preload("res://scripts/tasks/visuals/visual_virus_alert.gd"),
+	&"organize_files": preload("res://scripts/tasks/visuals/visual_organize_files.gd"),
+	&"install_software": preload("res://scripts/tasks/visuals/visual_install_software.gd"),
+	&"defrag_hdd": preload("res://scripts/tasks/visuals/visual_defrag_hdd.gd"),
+	&"blue_screen_fix": preload("res://scripts/tasks/visuals/visual_blue_screen_fix.gd"),
+}
 
 signal step_completed(step_index: int)
 signal task_completed(perfect: bool)
@@ -20,25 +32,22 @@ var _is_active: bool = false
 var _is_waiting: bool = false
 var _task_color: Color = _XPTheme.TITLE_BAR_BLUE
 
+# Wait progress tracking
+var _wait_start_time: float = 0.0
+var _wait_duration: float = 0.0
+
 var _title_bar: PanelContainer
 var _title_bar_gradient: Control  # XPTitleBar instance
 var _title_label: Label
 var _progress_label: Label
-var _steps_container: VBoxContainer
-var _step_labels: Array[Label] = []
-var _current_step_panel: PanelContainer
+var _visual_container: PanelContainer
+var _visual: Control  # TaskVisual instance
 var _key_hint_label: Label
 var _step_action_label: Label
-var _step_desc_label: Label
+var _mistake_label: Label
 var _patience_bar: ProgressBar
 var _wait_timer: Timer
-var _mistake_label: Label
 var _flash_tween: Tween
-
-# Step indicator characters
-const CHECK := "  "
-const ARROW := "  "
-const EMPTY := "    "
 
 
 func _ready() -> void:
@@ -62,7 +71,9 @@ func initialize(task_data: Resource, slot_index: int = -1) -> void:
 	# Apply task-specific color to title bar and window border
 	_apply_task_color()
 
-	_build_steps_display()
+	# Create the visual for this task
+	_create_visual(task_data)
+
 	_show_current_step()
 
 
@@ -86,6 +97,12 @@ func _process(_delta: float) -> void:
 		fill_style.bg_color = _XPTheme.PROGRESS_GREEN
 	_patience_bar.add_theme_stylebox_override("fill", fill_style)
 
+	# Update wait progress for visual
+	if _is_waiting and _wait_duration > 0.0 and _visual:
+		var elapsed := (Time.get_ticks_msec() / 1000.0) - _wait_start_time
+		var progress := clampf(elapsed / _wait_duration, 0.0, 1.0)
+		_visual.set_wait_progress(progress)
+
 
 func handle_key_input(event: InputEventKey) -> void:
 	if not _is_active or _is_waiting:
@@ -107,6 +124,18 @@ func is_active() -> bool:
 
 # --- Internal ---
 
+func _create_visual(task_data: Resource) -> void:
+	# Remove old visual if any
+	if _visual:
+		_visual.queue_free()
+		_visual = null
+
+	var visual_script: GDScript = _Visuals.get(task_data.task_id, _FallbackVisual)
+	_visual = visual_script.new()
+	_visual.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_visual_container.add_child(_visual)
+
+
 func _apply_task_color() -> void:
 	# Title bar gradient uses the task color
 	if _title_bar_gradient:
@@ -123,7 +152,6 @@ func _apply_task_color() -> void:
 
 
 func _advance_step() -> void:
-	_mark_step_complete(_current_step_index)
 	step_completed.emit(_current_step_index)
 	_current_step_index += 1
 
@@ -140,10 +168,18 @@ func _advance_step() -> void:
 
 func _start_wait(duration: float) -> void:
 	_is_waiting = true
+	_wait_start_time = Time.get_ticks_msec() / 1000.0
+	_wait_duration = duration
 	_key_hint_label.text = "[...]"
-	_step_action_label.text = _task_data.steps[_current_step_index].label
-	_step_desc_label.text = _task_data.steps[_current_step_index].description
-	_highlight_current_step()
+	var step = _task_data.steps[_current_step_index]
+	_step_action_label.text = step.label
+	_progress_label.text = "Step %d/%d" % [_current_step_index + 1, _task_data.steps.size()]
+
+	# Update visual
+	if _visual:
+		_visual.set_step(_current_step_index)
+		_visual.set_waiting(true)
+
 	_wait_timer.wait_time = duration
 	_wait_timer.start()
 
@@ -156,7 +192,7 @@ func _on_wait_timer_timeout() -> void:
 func _on_mistake() -> void:
 	_mistakes += 1
 	mistake_made.emit()
-	_mistake_label.text = "Mistakes: %d / %d" % [_mistakes, _task_data.max_mistakes]
+	_mistake_label.text = "Mistakes: %d/%d" % [_mistakes, _task_data.max_mistakes]
 	_flash_error()
 
 	if _mistakes >= _task_data.max_mistakes:
@@ -189,7 +225,6 @@ func _flash_success(perfect: bool) -> void:
 	add_theme_stylebox_override("panel", body_style)
 	_key_hint_label.text = "DONE!" if not perfect else "PERFECT!"
 	_step_action_label.text = ""
-	_step_desc_label.text = ""
 
 
 func _flash_error() -> void:
@@ -214,42 +249,14 @@ func _show_current_step() -> void:
 		key_display = "SPACE"
 	_key_hint_label.text = "[%s]" % key_display
 	_step_action_label.text = step.label
-	_step_desc_label.text = step.description
 	_progress_label.text = "Step %d/%d" % [_current_step_index + 1, _task_data.steps.size()]
-	_highlight_current_step()
 
-
-func _mark_step_complete(index: int) -> void:
-	if index < _step_labels.size():
-		_step_labels[index].text = CHECK + _task_data.steps[index].label
-		_step_labels[index].add_theme_color_override("font_color", Color(0.4, 0.6, 0.3))
-
-
-func _highlight_current_step() -> void:
-	for i in range(_step_labels.size()):
-		if i < _current_step_index:
-			continue # Already marked complete
-		elif i == _current_step_index:
-			_step_labels[i].text = ARROW + _task_data.steps[i].label
-			_step_labels[i].add_theme_color_override("font_color", _task_color)
-			_step_labels[i].add_theme_font_size_override("font_size", 14)
-		else:
-			_step_labels[i].text = EMPTY + _task_data.steps[i].label
-			_step_labels[i].add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
-
-
-func _build_steps_display() -> void:
-	for child in _steps_container.get_children():
-		child.queue_free()
-	_step_labels.clear()
-
-	for i in range(_task_data.steps.size()):
-		var lbl := Label.new()
-		lbl.text = EMPTY + _task_data.steps[i].label
-		lbl.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
-		lbl.add_theme_font_size_override("font_size", 13)
-		_steps_container.add_child(lbl)
-		_step_labels.append(lbl)
+	# Update visual
+	if _visual:
+		_visual.set_step(_current_step_index)
+		# Pass info to fallback visual if applicable
+		if _visual.has_method(&"set_task_info"):
+			_visual.set_task_info(step.label, step.description, _task_data.steps.size())
 
 
 func _build_ui() -> void:
@@ -264,10 +271,10 @@ func _build_ui() -> void:
 	vbox.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(vbox)
 
-	# Title bar: taller with gradient drawn behind content
+	# Title bar
 	_title_bar = PanelContainer.new()
 	var title_bar_style := StyleBoxFlat.new()
-	title_bar_style.bg_color = _XPTheme.TITLE_BAR_BLUE  # Fallback color
+	title_bar_style.bg_color = _XPTheme.TITLE_BAR_BLUE
 	title_bar_style.corner_radius_top_left = 8
 	title_bar_style.corner_radius_top_right = 8
 	title_bar_style.content_margin_left = 8.0
@@ -305,7 +312,7 @@ func _build_ui() -> void:
 	_progress_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	title_hbox.add_child(_progress_label)
 
-	# Window control buttons (XP-style: square, 3D beveled, distinct icons)
+	# Window control buttons
 	var ctrl_spacing := HBoxContainer.new()
 	ctrl_spacing.add_theme_constant_override("separation", 2)
 	ctrl_spacing.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -318,7 +325,6 @@ func _build_ui() -> void:
 		var ctrl_panel := PanelContainer.new()
 		var ctrl_style := StyleBoxFlat.new()
 		ctrl_style.bg_color = btn_info[1]
-		# 3D bevel: lighter top/left, darker bottom/right
 		ctrl_style.border_color = btn_info[2]
 		ctrl_style.border_width_top = 1
 		ctrl_style.border_width_left = 1
@@ -341,7 +347,7 @@ func _build_ui() -> void:
 		ctrl_panel.add_child(ctrl_btn)
 		ctrl_spacing.add_child(ctrl_panel)
 
-	# Menu bar (File, Edit, View, Help) like real XP windows
+	# Menu bar
 	var menu_bar := PanelContainer.new()
 	var menu_style := StyleBoxFlat.new()
 	menu_style.bg_color = _XPTheme.WINDOW_BG
@@ -369,69 +375,69 @@ func _build_ui() -> void:
 		menu_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		menu_hbox.add_child(menu_label)
 
-	# Steps list
-	_steps_container = VBoxContainer.new()
-	_steps_container.add_theme_constant_override("separation", 4)
-	vbox.add_child(_steps_container)
+	# Visual panel — fills most of the window
+	_visual_container = PanelContainer.new()
+	_visual_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	var vis_style := StyleBoxFlat.new()
+	vis_style.bg_color = Color(0.93, 0.92, 0.87)
+	vis_style.content_margin_left = 2.0
+	vis_style.content_margin_right = 2.0
+	vis_style.content_margin_top = 2.0
+	vis_style.content_margin_bottom = 2.0
+	_visual_container.add_theme_stylebox_override("panel", vis_style)
+	vbox.add_child(_visual_container)
 
 	# Separator
 	var sep := HSeparator.new()
 	vbox.add_child(sep)
 
-	# Current step panel
-	_current_step_panel = PanelContainer.new()
-	var step_style := StyleBoxFlat.new()
-	step_style.bg_color = Color(0.95, 0.95, 0.92)
-	step_style.border_color = Color(0.7, 0.7, 0.65)
-	step_style.set_border_width_all(1)
-	step_style.content_margin_left = 12.0
-	step_style.content_margin_right = 12.0
-	step_style.content_margin_top = 10.0
-	step_style.content_margin_bottom = 10.0
-	_current_step_panel.add_theme_stylebox_override("panel", step_style)
-	vbox.add_child(_current_step_panel)
-
-	var step_vbox := VBoxContainer.new()
-	step_vbox.add_theme_constant_override("separation", 4)
-	_current_step_panel.add_child(step_vbox)
-
+	# Current step: compact single-line [KEY] Action   Step N/M
 	var step_hbox := HBoxContainer.new()
-	step_hbox.add_theme_constant_override("separation", 12)
-	step_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	step_vbox.add_child(step_hbox)
+	step_hbox.add_theme_constant_override("separation", 8)
+	var step_margin := MarginContainer.new()
+	var step_margin_style := StyleBoxEmpty.new()
+	step_margin.add_theme_stylebox_override("panel", step_margin_style)
+	step_margin.add_theme_constant_override("margin_left", 8)
+	step_margin.add_theme_constant_override("margin_right", 8)
+	step_margin.add_theme_constant_override("margin_top", 4)
+	step_margin.add_theme_constant_override("margin_bottom", 2)
+	step_margin.add_child(step_hbox)
+	vbox.add_child(step_margin)
 
 	_key_hint_label = Label.new()
 	_key_hint_label.text = "[?]"
-	_key_hint_label.add_theme_font_size_override("font_size", 24)
+	_key_hint_label.add_theme_font_size_override("font_size", 20)
 	_key_hint_label.add_theme_color_override("font_color", _XPTheme.TITLE_BAR_BLUE)
 	step_hbox.add_child(_key_hint_label)
 
 	_step_action_label = Label.new()
 	_step_action_label.text = "..."
-	_step_action_label.add_theme_font_size_override("font_size", 18)
+	_step_action_label.add_theme_font_size_override("font_size", 15)
+	_step_action_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	step_hbox.add_child(_step_action_label)
 
-	# Step description label (flavor text)
-	_step_desc_label = Label.new()
-	_step_desc_label.text = ""
-	_step_desc_label.add_theme_font_size_override("font_size", 11)
-	_step_desc_label.add_theme_color_override("font_color", Color(0.45, 0.45, 0.42))
-	_step_desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	step_vbox.add_child(_step_desc_label)
+	# Bottom row: Mistakes + patience bar
+	var bottom_hbox := HBoxContainer.new()
+	bottom_hbox.add_theme_constant_override("separation", 8)
+	var bottom_margin := MarginContainer.new()
+	bottom_margin.add_theme_constant_override("margin_left", 8)
+	bottom_margin.add_theme_constant_override("margin_right", 8)
+	bottom_margin.add_theme_constant_override("margin_top", 0)
+	bottom_margin.add_theme_constant_override("margin_bottom", 4)
+	bottom_margin.add_child(bottom_hbox)
+	vbox.add_child(bottom_margin)
 
-	# Mistake label
 	_mistake_label = Label.new()
 	_mistake_label.text = ""
 	_mistake_label.add_theme_font_size_override("font_size", 11)
 	_mistake_label.add_theme_color_override("font_color", _XPTheme.ERROR_RED)
-	_mistake_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	vbox.add_child(_mistake_label)
+	bottom_hbox.add_child(_mistake_label)
 
-	# Patience bar
 	_patience_bar = ProgressBar.new()
-	_patience_bar.custom_minimum_size.y = 12
+	_patience_bar.custom_minimum_size = Vector2(0, 12)
 	_patience_bar.show_percentage = false
-	vbox.add_child(_patience_bar)
+	_patience_bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	bottom_hbox.add_child(_patience_bar)
 
 	# Wait timer
 	_wait_timer = Timer.new()

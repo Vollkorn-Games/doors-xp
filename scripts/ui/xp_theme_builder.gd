@@ -336,3 +336,95 @@ static func make_window_control_button(color: Color) -> StyleBoxFlat:
 	s.content_margin_top = 1.0
 	s.content_margin_bottom = 1.0
 	return s
+
+
+static func make_window_frame_style(base_color: Color = TITLE_BAR_BLUE) -> StyleBoxFlat:
+	## Outer window frame: blue rounded border wrapping title bar + body, with drop shadow.
+	## Authentic XP: the frame color matches the title bar, creating a unified look.
+	var s := StyleBoxFlat.new()
+	s.bg_color = base_color.darkened(0.15)
+	# Rounded top corners (title bar area), subtle bottom corners
+	s.corner_radius_top_left = 8
+	s.corner_radius_top_right = 8
+	s.corner_radius_bottom_left = 4
+	s.corner_radius_bottom_right = 4
+	# Outer highlight: lighter edge for the 3D raised look
+	s.border_color = base_color.lightened(0.25)
+	s.border_width_top = 1
+	s.border_width_left = 1
+	s.border_width_right = 1
+	s.border_width_bottom = 1
+	# Drop shadow
+	s.shadow_color = Color(0.0, 0.0, 0.0, 0.35)
+	s.shadow_size = 4
+	s.shadow_offset = Vector2(2, 2)
+	# Content margins create the visible frame border (3px blue edges)
+	s.content_margin_left = 3.0
+	s.content_margin_right = 3.0
+	s.content_margin_bottom = 3.0
+	s.content_margin_top = 0.0  # Title bar extends to the top edge
+	return s
+
+
+static func make_window_inner_body_style() -> StyleBoxFlat:
+	## Inner window body: beige panel sitting inside the outer blue frame.
+	## No side/bottom borders needed — the outer frame provides those.
+	var s := StyleBoxFlat.new()
+	s.bg_color = WINDOW_BG
+	s.content_margin_left = 2.0
+	s.content_margin_right = 2.0
+	s.content_margin_top = 0.0
+	s.content_margin_bottom = 2.0
+	return s
+
+
+static func make_sunken_panel_style() -> StyleBoxFlat:
+	## Classic XP inset/sunken panel (like the calculator display area).
+	## Dark border on top/left, lighter on bottom/right for 3D depth.
+	var s := StyleBoxFlat.new()
+	s.bg_color = Color(0.96, 0.95, 0.92)
+	s.border_color = Color(0.55, 0.55, 0.50)
+	s.border_width_top = 1
+	s.border_width_left = 1
+	s.border_width_bottom = 1
+	s.border_width_right = 1
+	s.content_margin_left = 1.0
+	s.content_margin_right = 1.0
+	s.content_margin_top = 1.0
+	s.content_margin_bottom = 1.0
+	return s
+
+
+static func make_xp_close_button_style() -> StyleBoxFlat:
+	## Authentic XP close button: red gradient, rounded, with beveled edges.
+	var s := StyleBoxFlat.new()
+	s.bg_color = Color(0.82, 0.34, 0.28)
+	# 3D bevel: lighter top/left, darker bottom/right
+	s.border_color = Color(0.95, 0.55, 0.45)
+	s.border_width_top = 1
+	s.border_width_left = 1
+	s.border_width_bottom = 1
+	s.border_width_right = 1
+	s.set_corner_radius_all(3)
+	s.content_margin_left = 6.0
+	s.content_margin_right = 6.0
+	s.content_margin_top = 2.0
+	s.content_margin_bottom = 2.0
+	return s
+
+
+static func make_xp_caption_button_style(base_color: Color = TITLE_BAR_BLUE) -> StyleBoxFlat:
+	## Authentic XP minimize/maximize button: blue gradient, rounded, beveled.
+	var s := StyleBoxFlat.new()
+	s.bg_color = base_color.lightened(0.15)
+	s.border_color = base_color.lightened(0.45)
+	s.border_width_top = 1
+	s.border_width_left = 1
+	s.border_width_bottom = 1
+	s.border_width_right = 1
+	s.set_corner_radius_all(3)
+	s.content_margin_left = 6.0
+	s.content_margin_right = 6.0
+	s.content_margin_top = 2.0
+	s.content_margin_bottom = 2.0
+	return s

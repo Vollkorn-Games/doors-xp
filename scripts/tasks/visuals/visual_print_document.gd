@@ -68,7 +68,7 @@ func _draw_open_document(w: float, h: float) -> void:
 
 
 func _draw_file_menu(w: float, h: float) -> void:
-	var body := _draw_mini_window(Rect2(15, 5, w - 30, h - 10), "quarterly_report.doc - Microsoft Word")
+	var body := _draw_mini_window(Rect2(10, 3, w - 20, h - 6), "quarterly_report.doc - Microsoft Word")
 
 	# Menu bar inside the mini window
 	var menus := ["File", "Edit", "View", "Insert", "Format"]
@@ -84,20 +84,21 @@ func _draw_file_menu(w: float, h: float) -> void:
 	# Dropdown
 	var dd_x := body.position.x + 4
 	var dd_y := body.position.y + 18
-	var dd_items := ["New...", "Open...", "Close", "Save", "Save As...", "---", "Page Setup...", "Print Preview", "Print...", "---", "Exit"]
-	draw_rect(Rect2(dd_x, dd_y, 120, float(dd_items.size()) * 18 + 6), Color(1.0, 1.0, 1.0))
-	draw_rect(Rect2(dd_x, dd_y, 120, float(dd_items.size()) * 18 + 6), Color(0.5, 0.5, 0.5), false, 1.0)
+	var dd_items := ["New...", "Open...", "Close", "Save", "Save As...", "---", "Page Setup...", "Print Preview", "Print..."]
+	var item_h := 16.0
+	draw_rect(Rect2(dd_x, dd_y, 120, float(dd_items.size()) * item_h + 4), Color(1.0, 1.0, 1.0))
+	draw_rect(Rect2(dd_x, dd_y, 120, float(dd_items.size()) * item_h + 4), Color(0.5, 0.5, 0.5), false, 1.0)
 	for i in range(dd_items.size()):
-		var iy := dd_y + 3 + float(i) * 18
+		var iy := dd_y + 2 + float(i) * item_h
 		if dd_items[i] == "---":
-			draw_line(Vector2(dd_x + 4, iy + 9), Vector2(dd_x + 116, iy + 9), Color(0.7, 0.7, 0.7), 1.0)
+			draw_line(Vector2(dd_x + 4, iy + 8), Vector2(dd_x + 116, iy + 8), Color(0.7, 0.7, 0.7), 1.0)
 		else:
-			_draw_text(dd_items[i], Vector2(dd_x + 8, iy + 14), 10, Color(0.0, 0.0, 0.0))
+			_draw_text(dd_items[i], Vector2(dd_x + 8, iy + 12), 10, Color(0.0, 0.0, 0.0))
 
 
 func _draw_print_menu_item(w: float, h: float) -> void:
 	# Same as file menu but "Print..." is highlighted
-	var body := _draw_mini_window(Rect2(15, 5, w - 30, h - 10), "quarterly_report.doc - Microsoft Word")
+	var body := _draw_mini_window(Rect2(10, 3, w - 20, h - 6), "quarterly_report.doc - Microsoft Word")
 
 	# Menu bar
 	var mx := body.position.x + 4
@@ -107,22 +108,23 @@ func _draw_print_menu_item(w: float, h: float) -> void:
 	# Dropdown with Print highlighted
 	var dd_x := body.position.x + 4
 	var dd_y := body.position.y + 18
-	var dd_items := ["New...", "Open...", "Close", "Save", "Save As...", "---", "Page Setup...", "Print Preview", "Print...", "---", "Exit"]
-	draw_rect(Rect2(dd_x, dd_y, 120, float(dd_items.size()) * 18 + 6), Color(1.0, 1.0, 1.0))
-	draw_rect(Rect2(dd_x, dd_y, 120, float(dd_items.size()) * 18 + 6), Color(0.5, 0.5, 0.5), false, 1.0)
+	var dd_items := ["New...", "Open...", "Close", "Save", "Save As...", "---", "Page Setup...", "Print Preview", "Print..."]
+	var item_h := 16.0
+	draw_rect(Rect2(dd_x, dd_y, 120, float(dd_items.size()) * item_h + 4), Color(1.0, 1.0, 1.0))
+	draw_rect(Rect2(dd_x, dd_y, 120, float(dd_items.size()) * item_h + 4), Color(0.5, 0.5, 0.5), false, 1.0)
 	for i in range(dd_items.size()):
-		var iy := dd_y + 3 + float(i) * 18
+		var iy := dd_y + 2 + float(i) * item_h
 		if dd_items[i] == "---":
-			draw_line(Vector2(dd_x + 4, iy + 9), Vector2(dd_x + 116, iy + 9), Color(0.7, 0.7, 0.7), 1.0)
+			draw_line(Vector2(dd_x + 4, iy + 8), Vector2(dd_x + 116, iy + 8), Color(0.7, 0.7, 0.7), 1.0)
 		elif dd_items[i] == "Print...":
-			draw_rect(Rect2(dd_x + 2, iy, 116, 18), Color(0.2, 0.4, 0.8))
-			_draw_text(dd_items[i], Vector2(dd_x + 8, iy + 14), 10, Color(1.0, 1.0, 1.0))
+			draw_rect(Rect2(dd_x + 2, iy, 116, item_h), Color(0.2, 0.4, 0.8))
+			_draw_text(dd_items[i], Vector2(dd_x + 8, iy + 12), 10, Color(1.0, 1.0, 1.0))
 		else:
-			_draw_text(dd_items[i], Vector2(dd_x + 8, iy + 14), 10, Color(0.0, 0.0, 0.0))
+			_draw_text(dd_items[i], Vector2(dd_x + 8, iy + 12), 10, Color(0.0, 0.0, 0.0))
 
 
 func _draw_select_printer(w: float, h: float) -> void:
-	var body := _draw_mini_window(Rect2(25, 10, w - 50, h - 20), "Print")
+	var body := _draw_mini_window(Rect2(15, 5, w - 30, h - 10), "Print")
 
 	# Printer section
 	_draw_text("Select Printer:", Vector2(body.position.x + 8, body.position.y + 18), 10, Color(0.0, 0.0, 0.0))
@@ -154,7 +156,7 @@ func _draw_select_printer(w: float, h: float) -> void:
 
 func _draw_confirm_print(w: float, h: float) -> void:
 	# Same as select printer but OK highlighted
-	var body := _draw_mini_window(Rect2(25, 10, w - 50, h - 20), "Print")
+	var body := _draw_mini_window(Rect2(15, 5, w - 30, h - 10), "Print")
 
 	_draw_text("Select Printer:", Vector2(body.position.x + 8, body.position.y + 18), 10, Color(0.0, 0.0, 0.0))
 	var list_rect := Rect2(body.position.x + 8, body.position.y + 24, body.size.x - 16, 60)

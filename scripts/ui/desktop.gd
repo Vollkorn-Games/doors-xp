@@ -7,6 +7,7 @@ const XPTheme := preload("res://scripts/ui/xp_theme_builder.gd")
 const TaskWindowScript := preload("res://scripts/tasks/task_window.gd")
 const TaskbarButtonScript := preload("res://scripts/ui/taskbar_button.gd")
 const ScorePopupScript := preload("res://scripts/ui/score_popup.gd")
+const XPWallpaper := preload("res://scripts/ui/xp_wallpaper.gd")
 
 const MAX_SLOTS := 8
 
@@ -68,7 +69,10 @@ func _unhandled_key_input(event: InputEvent) -> void:
 
 
 func _setup_visuals() -> void:
-	_background.color = XPTheme.DESKTOP_BG
+	_background.color = Color.TRANSPARENT
+	var wallpaper := XPWallpaper.new()
+	wallpaper.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_background.add_child(wallpaper)
 	_setup_desktop_icons()
 	_taskbar_panel.add_theme_stylebox_override("panel", XPTheme.make_taskbar_style())
 

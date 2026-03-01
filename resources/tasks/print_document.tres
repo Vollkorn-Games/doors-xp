@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="TaskData" load_steps=8 format=3]
+[gd_resource type="Resource" script_class="TaskData" load_steps=10 format=3]
 
 [ext_resource type="Script" path="res://scripts/tasks/task_data.gd" id="1_td"]
 [ext_resource type="Script" path="res://scripts/tasks/task_step.gd" id="2_ts"]
@@ -7,7 +7,7 @@
 script = ExtResource("2_ts")
 label = "Open Document"
 key_action = "o"
-description = "Open the document to print"
+description = "Double-click 'quarterly_report.doc'"
 is_timed_wait = false
 wait_time = 0.0
 
@@ -15,39 +15,55 @@ wait_time = 0.0
 script = ExtResource("2_ts")
 label = "File Menu"
 key_action = "f"
-description = "Open the File menu"
+description = "Click 'File' in the menu bar"
 is_timed_wait = false
 wait_time = 0.0
 
 [sub_resource type="Resource" id="step3"]
 script = ExtResource("2_ts")
-label = "Select Print"
+label = "Print..."
 key_action = "p"
-description = "Choose Print from the menu"
+description = "Select 'Print...' from the dropdown"
 is_timed_wait = false
 wait_time = 0.0
 
 [sub_resource type="Resource" id="step4"]
 script = ExtResource("2_ts")
-label = "Set Copies"
-key_action = "c"
-description = "Set the number of copies"
+label = "Select Printer"
+key_action = "s"
+description = "Choose 'HP DeskJet 840C' from the list"
 is_timed_wait = false
 wait_time = 0.0
 
 [sub_resource type="Resource" id="step5"]
 script = ExtResource("2_ts")
-label = "Printing..."
-key_action = ""
-description = "Sending document to printer..."
-is_timed_wait = true
-wait_time = 1.5
+label = "Confirm Print"
+key_action = "enter"
+description = "Click OK to start printing"
+is_timed_wait = false
+wait_time = 0.0
 
 [sub_resource type="Resource" id="step6"]
 script = ExtResource("2_ts")
+label = "Spooling..."
+key_action = ""
+description = "Sending document to print spooler..."
+is_timed_wait = true
+wait_time = 1.5
+
+[sub_resource type="Resource" id="step7"]
+script = ExtResource("2_ts")
+label = "Printing..."
+key_action = ""
+description = "Printing page 1 of 3..."
+is_timed_wait = true
+wait_time = 2.0
+
+[sub_resource type="Resource" id="step8"]
+script = ExtResource("2_ts")
 label = "Collect Pages"
-key_action = "enter"
-description = "Pick up your printed pages"
+key_action = "g"
+description = "Grab pages from the printer tray"
 is_timed_wait = false
 wait_time = 0.0
 
@@ -55,10 +71,10 @@ wait_time = 0.0
 script = ExtResource("1_td")
 task_name = "Print Document"
 task_id = &"print_document"
-description = "Print this document before the deadline!"
-steps = [SubResource("step1"), SubResource("step2"), SubResource("step3"), SubResource("step4"), SubResource("step5"), SubResource("step6")]
-time_limit = 40.0
-base_score = 80
+description = "The quarterly report needs printing — 3 copies, ASAP!"
+steps = [SubResource("step1"), SubResource("step2"), SubResource("step3"), SubResource("step4"), SubResource("step5"), SubResource("step6"), SubResource("step7"), SubResource("step8")]
+time_limit = 45.0
+base_score = 100
 mistake_penalty = 20
 max_mistakes = 3
 difficulty = 1

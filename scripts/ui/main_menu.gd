@@ -311,6 +311,12 @@ func _make_user_entry(username: String, icon_text: String, active: bool) -> Pane
 	login_hover.bg_color = Color(0.18, 0.42, 0.80)
 	login_btn.add_theme_stylebox_override("hover", login_hover)
 	login_btn.add_theme_stylebox_override("pressed", login_style)
+	var login_focus := login_style.duplicate()
+	login_focus.border_color = Color(0.50, 0.70, 1.0)
+	login_focus.set_border_width_all(2)
+	login_btn.add_theme_stylebox_override("focus", login_focus)
+	login_btn.add_theme_color_override("font_focus_color", _XPTheme.TEXT_WHITE)
+	login_btn.add_theme_color_override("font_pressed_color", _XPTheme.TEXT_WHITE)
 	login_btn.pressed.connect(_on_start)
 	login_btn.focus_mode = Control.FOCUS_ALL
 	login_btn.grab_focus.call_deferred()

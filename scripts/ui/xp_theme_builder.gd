@@ -157,10 +157,16 @@ static func _make_separator() -> StyleBoxFlat:
 static func make_title_bar_style() -> StyleBoxFlat:
 	var s := StyleBoxFlat.new()
 	s.bg_color = TITLE_BAR_BLUE
-	s.corner_radius_top_left = 6
-	s.corner_radius_top_right = 6
+	s.corner_radius_top_left = 8
+	s.corner_radius_top_right = 8
 	s.corner_radius_bottom_left = 0
 	s.corner_radius_bottom_right = 0
+	# XP gradient hint: lighter border on top to simulate the gradient shine
+	s.border_color = TITLE_BAR_GRADIENT_END
+	s.border_width_top = 2
+	s.border_width_left = 0
+	s.border_width_right = 0
+	s.border_width_bottom = 0
 	s.content_margin_left = 8.0
 	s.content_margin_right = 4.0
 	s.content_margin_top = 4.0
@@ -194,12 +200,16 @@ static func make_window_body_style() -> StyleBoxFlat:
 static func make_taskbar_style() -> StyleBoxFlat:
 	var s := StyleBoxFlat.new()
 	s.bg_color = TASKBAR_BG
-	s.border_color = Color(0.08, 0.28, 0.7)
+	# XP taskbar has a bright highlight line at the top edge
+	s.border_color = Color(0.35, 0.6, 1.0)
 	s.border_width_top = 2
+	s.border_width_bottom = 0
+	s.border_width_left = 0
+	s.border_width_right = 0
 	s.content_margin_left = 4.0
 	s.content_margin_right = 4.0
-	s.content_margin_top = 2.0
-	s.content_margin_bottom = 2.0
+	s.content_margin_top = 3.0
+	s.content_margin_bottom = 3.0
 	return s
 
 
@@ -256,4 +266,49 @@ static func make_start_button_style() -> StyleBoxFlat:
 static func make_start_button_hover() -> StyleBoxFlat:
 	var s := make_start_button_style()
 	s.bg_color = START_BUTTON_HOVER
+	return s
+
+
+static func make_system_tray_style() -> StyleBoxFlat:
+	## Sunken notification area / clock region on the right of the taskbar
+	var s := StyleBoxFlat.new()
+	s.bg_color = Color(0.1, 0.32, 0.75)
+	s.border_color = Color(0.08, 0.25, 0.6)
+	s.set_border_width_all(1)
+	s.border_width_right = 0
+	s.set_corner_radius_all(2)
+	s.content_margin_left = 10.0
+	s.content_margin_right = 10.0
+	s.content_margin_top = 2.0
+	s.content_margin_bottom = 2.0
+	return s
+
+
+static func make_toolbar_style() -> StyleBoxFlat:
+	## XP-style info bar / toolbar for the HUD at the top
+	var s := StyleBoxFlat.new()
+	s.bg_color = Color(0.93, 0.92, 0.87, 0.9)
+	s.border_color = Color(0.7, 0.7, 0.65)
+	s.set_border_width_all(1)
+	s.set_corner_radius_all(0)
+	s.content_margin_left = 8.0
+	s.content_margin_right = 8.0
+	s.content_margin_top = 3.0
+	s.content_margin_bottom = 3.0
+	s.shadow_color = Color(0.0, 0.0, 0.0, 0.1)
+	s.shadow_size = 2
+	return s
+
+
+static func make_window_control_button(color: Color) -> StyleBoxFlat:
+	## Tiny title bar control button (min/max/close)
+	var s := StyleBoxFlat.new()
+	s.bg_color = color
+	s.border_color = Color(1.0, 1.0, 1.0, 0.4)
+	s.set_border_width_all(1)
+	s.set_corner_radius_all(3)
+	s.content_margin_left = 4.0
+	s.content_margin_right = 4.0
+	s.content_margin_top = 1.0
+	s.content_margin_bottom = 1.0
 	return s

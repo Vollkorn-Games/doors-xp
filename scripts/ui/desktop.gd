@@ -72,6 +72,8 @@ func _setup_visuals() -> void:
 	_setup_desktop_icons()
 	_taskbar_panel.add_theme_stylebox_override("panel", XPTheme.make_taskbar_style())
 
+	# Start button with Windows flag
+	_start_button.text = "start"
 	_start_button.add_theme_stylebox_override("normal", XPTheme.make_start_button_style())
 	_start_button.add_theme_stylebox_override("hover", XPTheme.make_start_button_hover())
 	_start_button.add_theme_stylebox_override("pressed", XPTheme.make_start_button_style())
@@ -79,21 +81,63 @@ func _setup_visuals() -> void:
 	_start_button.add_theme_color_override("font_hover_color", XPTheme.TEXT_WHITE)
 	_start_button.add_theme_font_size_override("font_size", 13)
 
+	# System tray / clock area — sunken style
+	var tray_panel := PanelContainer.new()
+	tray_panel.add_theme_stylebox_override("panel", XPTheme.make_system_tray_style())
+	_clock_label.get_parent().remove_child(_clock_label)
+	tray_panel.add_child(_clock_label)
+	_taskbar_panel.get_child(0).add_child(tray_panel)
 	_clock_label.add_theme_color_override("font_color", XPTheme.TEXT_WHITE)
 	_clock_label.add_theme_font_size_override("font_size", 12)
 
-	_score_label.add_theme_font_size_override("font_size", 16)
-	_combo_label.add_theme_font_size_override("font_size", 14)
-	_day_label.add_theme_font_size_override("font_size", 14)
+	# HUD styled as XP toolbar
+	_setup_hud_style()
+
+
+func _setup_hud_style() -> void:
+	# Style the HUD top bar as a translucent XP toolbar
+	var top_bar: HBoxContainer = _day_label.get_parent() as HBoxContainer
+	var hud: Control = top_bar.get_parent()
+
+	# Wrap the top bar + reputation bar in a styled panel
+	var toolbar := PanelContainer.new()
+	toolbar.add_theme_stylebox_override("panel", XPTheme.make_toolbar_style())
+	toolbar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# Position at top, full width, auto height
+	toolbar.anchor_left = 0.0
+	toolbar.anchor_right = 1.0
+	toolbar.anchor_top = 0.0
+	toolbar.anchor_bottom = 0.0
+	toolbar.offset_bottom = 0.0
+	toolbar.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+
+	var toolbar_vbox := VBoxContainer.new()
+	toolbar_vbox.add_theme_constant_override("separation", 2)
+	toolbar_vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	toolbar.add_child(toolbar_vbox)
+
+	# Reparent top bar and reputation bar into the toolbar
+	var top_bar_parent := top_bar.get_parent()
+	top_bar_parent.remove_child(top_bar)
+	top_bar_parent.remove_child(_reputation_bar)
+	toolbar_vbox.add_child(top_bar)
+	toolbar_vbox.add_child(_reputation_bar)
+	_reputation_bar.custom_minimum_size.y = 10
+
+	hud.add_child(toolbar)
+
+	_score_label.add_theme_font_size_override("font_size", 15)
+	_combo_label.add_theme_font_size_override("font_size", 13)
+	_day_label.add_theme_font_size_override("font_size", 13)
 
 
 func _setup_desktop_icons() -> void:
 	var icons_data := [
-		{"name": "My Computer", "symbol": "[PC]", "pos": Vector2(20, 70)},
-		{"name": "My Documents", "symbol": "[DOC]", "pos": Vector2(20, 160)},
-		{"name": "Recycle Bin", "symbol": "[BIN]", "pos": Vector2(20, 250)},
-		{"name": "Internet\nExplorer", "symbol": "[IE]", "pos": Vector2(20, 340)},
-		{"name": "Control Panel", "symbol": "[CP]", "pos": Vector2(20, 430)},
+		{"name": "My Computer", "symbol": "PC", "color": Color(0.15, 0.35, 0.65), "pos": Vector2(20, 70)},
+		{"name": "My Documents", "symbol": "My", "color": Color(0.7, 0.55, 0.15), "pos": Vector2(20, 160)},
+		{"name": "Recycle Bin", "symbol": "Bin", "color": Color(0.4, 0.5, 0.4), "pos": Vector2(20, 250)},
+		{"name": "Internet\nExplorer", "symbol": "IE", "color": Color(0.1, 0.45, 0.75), "pos": Vector2(20, 340)},
+		{"name": "Control\nPanel", "symbol": "CP", "color": Color(0.55, 0.3, 0.15), "pos": Vector2(20, 430)},
 	]
 	for icon_info: Dictionary in icons_data:
 		var icon_container := VBoxContainer.new()
@@ -103,19 +147,23 @@ func _setup_desktop_icons() -> void:
 
 		var icon_rect := PanelContainer.new()
 		var icon_style := StyleBoxFlat.new()
-		icon_style.bg_color = Color(0.2, 0.4, 0.7, 0.6)
+		icon_style.bg_color = icon_info["color"]
 		icon_style.set_corner_radius_all(4)
-		icon_style.content_margin_left = 8.0
-		icon_style.content_margin_right = 8.0
-		icon_style.content_margin_top = 6.0
-		icon_style.content_margin_bottom = 6.0
+		icon_style.border_color = Color(1.0, 1.0, 1.0, 0.2)
+		icon_style.set_border_width_all(1)
+		icon_style.content_margin_left = 10.0
+		icon_style.content_margin_right = 10.0
+		icon_style.content_margin_top = 8.0
+		icon_style.content_margin_bottom = 8.0
+		icon_style.shadow_color = Color(0.0, 0.0, 0.0, 0.3)
+		icon_style.shadow_size = 2
 		icon_rect.add_theme_stylebox_override("panel", icon_style)
 		icon_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 		var icon_label := Label.new()
 		icon_label.text = icon_info["symbol"]
 		icon_label.add_theme_color_override("font_color", XPTheme.TEXT_WHITE)
-		icon_label.add_theme_font_size_override("font_size", 16)
+		icon_label.add_theme_font_size_override("font_size", 18)
 		icon_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		icon_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		icon_rect.add_child(icon_label)
@@ -126,8 +174,8 @@ func _setup_desktop_icons() -> void:
 		name_label.add_theme_color_override("font_color", XPTheme.TEXT_WHITE)
 		name_label.add_theme_font_size_override("font_size", 11)
 		name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		name_label.add_theme_constant_override("outline_size", 2)
-		name_label.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.6))
+		name_label.add_theme_constant_override("outline_size", 3)
+		name_label.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.7))
 		name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		icon_container.add_child(name_label)
 

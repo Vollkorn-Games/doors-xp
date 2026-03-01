@@ -267,6 +267,7 @@ func _build_ui() -> void:
 	vbox.add_child(_title_bar)
 
 	var title_hbox := HBoxContainer.new()
+	title_hbox.add_theme_constant_override("separation", 4)
 	_title_bar.add_child(title_hbox)
 
 	_title_label = Label.new()
@@ -281,6 +282,21 @@ func _build_ui() -> void:
 	_progress_label.add_theme_color_override("font_color", Color(0.8, 0.9, 1.0))
 	_progress_label.add_theme_font_size_override("font_size", 11)
 	title_hbox.add_child(_progress_label)
+
+	# Window control buttons (decorative, XP-style)
+	var ctrl_spacing := HBoxContainer.new()
+	ctrl_spacing.add_theme_constant_override("separation", 2)
+	title_hbox.add_child(ctrl_spacing)
+	for btn_info: Array in [["_", Color(0.2, 0.4, 0.8)], ["[]", Color(0.2, 0.4, 0.8)], ["X", Color(0.7, 0.2, 0.15)]]:
+		var ctrl_btn := Label.new()
+		ctrl_btn.text = btn_info[0]
+		ctrl_btn.add_theme_font_size_override("font_size", 10)
+		ctrl_btn.add_theme_color_override("font_color", _XPTheme.TEXT_WHITE)
+		var ctrl_style := _XPTheme.make_window_control_button(btn_info[1])
+		var ctrl_panel := PanelContainer.new()
+		ctrl_panel.add_theme_stylebox_override("panel", ctrl_style)
+		ctrl_panel.add_child(ctrl_btn)
+		ctrl_spacing.add_child(ctrl_panel)
 
 	# Steps list
 	_steps_container = VBoxContainer.new()
